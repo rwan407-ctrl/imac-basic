@@ -6,7 +6,7 @@ The tool uses the bundled HTML files in `static\handbook` as the source of truth
 
 The frontend also serves the styled handbook export from `static\handbook`. Search results include:
 
-- `Preview section`: loads the matching local HTML chapter in the preview pane.
+- Inline HTML evidence for the top five results, rendered directly in the result list with one main page scroll.
 - `Open local HTML`: opens the styled local chapter/section in a new tab.
 - `Original source`: opens the original Te Whatu Ora URL.
 
@@ -41,7 +41,7 @@ Search body:
 ```json
 {
   "query": "MMR contraindications during pregnancy",
-  "top_k": 8,
+  "top_k": 5,
   "rerank": true
 }
 ```

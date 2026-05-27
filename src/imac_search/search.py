@@ -13,6 +13,7 @@ from .confidence import apply_confidence, label_for
 from .config import settings
 from .dense import EmbeddingModel
 from .fusion import rank_map, reciprocal_rank_fusion, score_map
+from .html_fragments import HtmlFragmentProvider
 from .ingest import load_chunks
 from .models import SearchResult
 from .text import make_snippet, tokenize
@@ -42,6 +43,7 @@ class SearchEngine:
         self.embeddings = np.load(self.index_dir / "embeddings.npy").astype(np.float32)
         self.bm25 = BM25Index([chunk.text for chunk in self.chunks])
         self.embedder = EmbeddingModel(settings.embedding_model)
+        self.fragments = HtmlFragmentProvider(settings.source_dir)
         self._reranker = None
         self.reranker_error: str | None = None
         self.metadata = self._load_metadata()
@@ -162,14 +164,22 @@ class SearchEngine:
             }
 
         query_confidence = results[0].confidence if results else 0.0
+        api_results = []
+        for index, result in enumerate(results):
+            item = result.to_api_dict()
+            if index < 5:
+                item["section_html"] = self.fragments.section_html(result.chunk)
+            else:
+                item["section_html"] = ""
+            api_results.append(item)
+
         return {
             "query": query,
             "top_k": top_k,
             "rerank": rerank,
             "query_confidence": round(query_confidence, 4),
             "query_confidence_label": label_for(query_confidence),
-            "results": [result.to_api_dict() for result in results],
+            "results": api_results,
             "warnings": warnings,
             "elapsed_ms": round((time.time() - started) * 1000),
         }
-

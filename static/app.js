@@ -6,13 +6,6 @@ const resultsEl = document.querySelector("#results");
 const summaryEl = document.querySelector("#summary");
 const statusEl = document.querySelector("#status");
 const statsEl = document.querySelector("#stats");
-const previewPanel = document.querySelector("#preview-panel");
-const previewTitle = document.querySelector("#preview-title");
-const previewSection = document.querySelector("#preview-section");
-const previewOpen = document.querySelector("#preview-open");
-const chapterPreview = document.querySelector("#chapter-preview");
-
-let lastResults = [];
 
 function escapeHtml(value) {
   return String(value)
@@ -40,7 +33,6 @@ async function loadStats() {
 }
 
 function renderResults(data) {
-  lastResults = data.results;
   summaryEl.hidden = false;
   summaryEl.innerHTML = `${badge(data.query_confidence_label, data.query_confidence)} <strong>${data.results.length}</strong> results in <strong>${data.elapsed_ms} ms</strong>`;
   if (data.warnings && data.warnings.length) {
@@ -49,13 +41,20 @@ function renderResults(data) {
 
   if (!data.results.length) {
     resultsEl.innerHTML = `<div class="empty">No results</div>`;
-    previewPanel.hidden = true;
     return;
   }
 
   resultsEl.innerHTML = data.results
     .map((result, index) => {
       const scores = escapeHtml(JSON.stringify(result.scores, null, 2));
+      const evidenceHtml = result.section_html
+        ? `
+          <section class="evidence-html">
+            <div class="evidence-label">Handbook HTML evidence</div>
+            <div class="evidence-body">${result.section_html}</div>
+          </section>
+        `
+        : "";
       return `
         <article class="result">
           <div class="result-head">
@@ -67,11 +66,11 @@ function renderResults(data) {
           </div>
           <p class="snippet">${escapeHtml(result.snippet)}</p>
           <div class="meta">
-            <button class="link-button" type="button" data-preview-index="${index}">Preview section</button>
             <a href="${escapeHtml(result.local_html_url)}" target="_blank" rel="noreferrer">Open local HTML</a>
             <a href="${escapeHtml(result.url)}" target="_blank" rel="noreferrer">Original source</a>
             <span>${escapeHtml(result.chunk_id)}</span>
           </div>
+          ${evidenceHtml}
           <details>
             <summary>Scores</summary>
             <pre>${scores}</pre>
@@ -80,21 +79,6 @@ function renderResults(data) {
       `;
     })
     .join("");
-
-  showPreview(0);
-}
-
-function showPreview(index) {
-  const result = lastResults[index];
-  if (!result) return;
-  previewPanel.hidden = false;
-  previewTitle.textContent = result.chapter_title;
-  previewSection.textContent = result.section;
-  previewOpen.href = result.local_html_url;
-  chapterPreview.src = result.local_html_url;
-  document.querySelectorAll("[data-preview-index]").forEach((button) => {
-    button.classList.toggle("active", Number(button.dataset.previewIndex) === index);
-  });
 }
 
 form.addEventListener("submit", async (event) => {
@@ -120,12 +104,6 @@ form.addEventListener("submit", async (event) => {
   } catch (error) {
     resultsEl.innerHTML = `<div class="empty">${escapeHtml(error.message)}</div>`;
   }
-});
-
-resultsEl.addEventListener("click", (event) => {
-  const button = event.target.closest("[data-preview-index]");
-  if (!button) return;
-  showPreview(Number(button.dataset.previewIndex));
 });
 
 loadStats();
