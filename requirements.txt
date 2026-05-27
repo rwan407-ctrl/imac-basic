@@ -1,0 +1,5 @@
+beautifulsoup4>=4.12
+lxml>=5.0
+numpy>=1.26
+sentence-transformers>=2.7
+

@@ -1,0 +1,10 @@
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+server*.log
+imac_search_*.png
+data/index/*.jsonl
+data/index/*.json
+data/index/*.npy
+data/index/*.log

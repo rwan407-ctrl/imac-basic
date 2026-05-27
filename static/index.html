@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>IMAC Handbook Search</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div>
+        <h1>IMAC Handbook Search</h1>
+        <p id="stats">Loading index...</p>
+      </div>
+      <span class="status" id="status">offline</span>
+    </header>
+
+    <main>
+      <section class="search-panel">
+        <form id="search-form">
+          <label for="query">Search</label>
+          <div class="search-row">
+            <input id="query" name="query" autocomplete="off" value="MMR contraindications during pregnancy" />
+            <button type="submit">Search</button>
+          </div>
+          <div class="controls">
+            <label>
+              Results
+              <input id="top-k" type="number" min="1" max="25" value="8" />
+            </label>
+            <label class="check">
+              <input id="rerank" type="checkbox" checked />
+              Rerank
+            </label>
+          </div>
+        </form>
+      </section>
+
+      <section class="summary" id="summary" hidden></section>
+      <section class="workspace">
+        <section class="results" id="results"></section>
+        <aside class="preview-panel" id="preview-panel" hidden>
+          <div class="preview-head">
+            <div>
+              <h2 id="preview-title">Handbook Section</h2>
+              <p id="preview-section"></p>
+            </div>
+            <a id="preview-open" href="#" target="_blank" rel="noreferrer">Open full page</a>
+          </div>
+          <iframe id="chapter-preview" title="Handbook chapter preview" sandbox=""></iframe>
+        </aside>
+      </section>
+    </main>
+
+    <script src="/app.js"></script>
+  </body>
+</html>
