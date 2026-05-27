@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>IMAC Handbook Search</title>
-    <link rel="stylesheet" href="/styles.css" />
+    <link rel="stylesheet" href="/styles.css?v=next-score-4" />
   </head>
   <body>
     <header class="topbar">
@@ -24,8 +24,8 @@
             <button type="submit">Search</button>
           </div>
           <div class="controls">
-            <input id="top-k" type="hidden" value="1" />
-            <span class="mode-note">Showing the single most likely handbook section</span>
+            <input id="top-k" type="hidden" value="5" />
+            <span class="mode-note">Showing one handbook page at a time from the top likely matches</span>
             <label class="check">
               <input id="rerank" type="checkbox" checked />
               Rerank
@@ -42,12 +42,16 @@
             <h2 id="chapter-viewer-title">Highlighted Handbook Page</h2>
             <p id="chapter-viewer-section"></p>
           </div>
-          <a id="chapter-viewer-open" href="#" target="_blank" rel="noreferrer">Open highlighted page</a>
+          <div class="chapter-viewer-actions">
+            <span id="chapter-viewer-score"></span>
+            <button id="chapter-viewer-next" class="next-result" type="button">Next likely</button>
+            <a id="chapter-viewer-open" href="#" target="_blank" rel="noreferrer">Open highlighted page</a>
+          </div>
         </div>
         <iframe id="chapter-frame" title="Highlighted handbook chapter"></iframe>
       </section>
     </main>
 
-    <script src="/app.js"></script>
+    <script src="/app.js?v=next-score-4"></script>
   </body>
 </html>
