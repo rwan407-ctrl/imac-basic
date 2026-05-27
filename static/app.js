@@ -6,6 +6,11 @@ const resultsEl = document.querySelector("#results");
 const summaryEl = document.querySelector("#summary");
 const statusEl = document.querySelector("#status");
 const statsEl = document.querySelector("#stats");
+const chapterViewer = document.querySelector("#chapter-viewer");
+const chapterViewerTitle = document.querySelector("#chapter-viewer-title");
+const chapterViewerSection = document.querySelector("#chapter-viewer-section");
+const chapterViewerOpen = document.querySelector("#chapter-viewer-open");
+const chapterFrame = document.querySelector("#chapter-frame");
 
 function escapeHtml(value) {
   return String(value)
@@ -34,51 +39,47 @@ async function loadStats() {
 
 function renderResults(data) {
   summaryEl.hidden = false;
-  summaryEl.innerHTML = `${badge(data.query_confidence_label, data.query_confidence)} <strong>${data.results.length}</strong> results in <strong>${data.elapsed_ms} ms</strong>`;
+  summaryEl.innerHTML = `${badge(data.query_confidence_label, data.query_confidence)} best match in <strong>${data.elapsed_ms} ms</strong>`;
   if (data.warnings && data.warnings.length) {
     summaryEl.innerHTML += `<div>${data.warnings.map(escapeHtml).join("<br>")}</div>`;
   }
 
   if (!data.results.length) {
     resultsEl.innerHTML = `<div class="empty">No results</div>`;
+    chapterViewer.hidden = true;
     return;
   }
 
-  resultsEl.innerHTML = data.results
-    .map((result, index) => {
-      const scores = escapeHtml(JSON.stringify(result.scores, null, 2));
-      const evidenceHtml = result.section_html
-        ? `
-          <section class="evidence-html">
-            <div class="evidence-label">Handbook HTML evidence</div>
-            <div class="evidence-body">${result.section_html}</div>
-          </section>
-        `
-        : "";
-      return `
-        <article class="result">
-          <div class="result-head">
-            <div>
-              <h2>${index + 1}. ${escapeHtml(result.chapter_title)}</h2>
-              <p class="section">${escapeHtml(result.section)}</p>
-            </div>
-            ${badge(result.confidence_label, result.confidence)}
-          </div>
-          <p class="snippet">${escapeHtml(result.snippet)}</p>
-          <div class="meta">
-            <a href="${escapeHtml(result.local_html_url)}" target="_blank" rel="noreferrer">Open local HTML</a>
-            <a href="${escapeHtml(result.url)}" target="_blank" rel="noreferrer">Original source</a>
-            <span>${escapeHtml(result.chunk_id)}</span>
-          </div>
-          ${evidenceHtml}
-          <details>
-            <summary>Scores</summary>
-            <pre>${scores}</pre>
-          </details>
-        </article>
-      `;
-    })
-    .join("");
+  const result = data.results[0];
+  const scores = escapeHtml(JSON.stringify(result.scores, null, 2));
+  resultsEl.innerHTML = `
+    <article class="result best-result">
+      <div class="result-head">
+        <div>
+          <h2>Most likely match: ${escapeHtml(result.chapter_title)}</h2>
+          <p class="section">${escapeHtml(result.section)}</p>
+        </div>
+        ${badge(result.confidence_label, result.confidence)}
+      </div>
+      <p class="snippet">${escapeHtml(result.snippet)}</p>
+      <div class="meta">
+        <a href="${escapeHtml(result.highlighted_html_url)}" target="_blank" rel="noreferrer">Open highlighted page</a>
+        <a href="${escapeHtml(result.local_html_url)}" target="_blank" rel="noreferrer">Open local HTML</a>
+        <a href="${escapeHtml(result.url)}" target="_blank" rel="noreferrer">Original source</a>
+        <span>${escapeHtml(result.chunk_id)}</span>
+      </div>
+      <details>
+        <summary>Scores</summary>
+        <pre>${scores}</pre>
+      </details>
+    </article>
+  `;
+
+  chapterViewer.hidden = false;
+  chapterViewerTitle.textContent = result.chapter_title;
+  chapterViewerSection.textContent = result.section;
+  chapterViewerOpen.href = result.highlighted_html_url;
+  chapterFrame.src = result.highlighted_html_url;
 }
 
 form.addEventListener("submit", async (event) => {
@@ -94,7 +95,7 @@ form.addEventListener("submit", async (event) => {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         query,
-        top_k: Number(topKInput.value || 8),
+        top_k: 1,
         rerank: rerankInput.checked,
       }),
     });

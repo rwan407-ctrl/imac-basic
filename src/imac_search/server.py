@@ -5,8 +5,9 @@ import json
 import mimetypes
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
-from urllib.parse import unquote, urlparse
+from urllib.parse import parse_qs, unquote, urlparse
 
+from .chapter_view import render_highlighted_chapter
 from .config import PROJECT_ROOT, settings
 from .search import SearchEngine
 
@@ -44,7 +45,8 @@ class Handler(BaseHTTPRequestHandler):
         self._send(*json_bytes(payload, status))
 
     def do_GET(self) -> None:
-        path = urlparse(self.path).path
+        parsed = urlparse(self.path)
+        path = parsed.path
         if path == "/health":
             self._send_json({"ok": True, "index_exists": settings.chunks_path.exists() and settings.embeddings_path.exists()})
             return
@@ -53,6 +55,9 @@ class Handler(BaseHTTPRequestHandler):
                 self._send_json(get_engine().stats())
             except Exception as exc:
                 self._send_json({"ready": False, "error": str(exc)}, status=503)
+            return
+        if path == "/api/chapter":
+            self._serve_highlighted_chapter(parsed.query)
             return
         self._serve_static(path)
 
@@ -73,6 +78,21 @@ class Handler(BaseHTTPRequestHandler):
             self._send_json(response)
         except Exception as exc:
             self._send_json({"error": str(exc)}, status=500)
+
+    def _serve_highlighted_chapter(self, query_string: str) -> None:
+        params = parse_qs(query_string)
+        chunk_id = (params.get("chunk_id") or [""])[0]
+        query = (params.get("q") or [""])[0]
+        if not chunk_id:
+            self._send_json({"error": "chunk_id is required"}, status=400)
+            return
+        engine = get_engine()
+        chunk = next((item for item in engine.chunks if item.chunk_id == chunk_id), None)
+        if chunk is None:
+            self._send_json({"error": "chunk not found"}, status=404)
+            return
+        html = render_highlighted_chapter(settings.source_dir, chunk, query=query)
+        self._send(200, html.encode("utf-8"), "text/html; charset=utf-8")
 
     def _serve_static(self, path: str) -> None:
         if path == "/":
@@ -104,4 +124,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-

@@ -5,6 +5,7 @@ import math
 import time
 from pathlib import Path
 from typing import Any
+from urllib.parse import quote
 
 import numpy as np
 
@@ -167,6 +168,10 @@ class SearchEngine:
         api_results = []
         for index, result in enumerate(results):
             item = result.to_api_dict()
+            item["highlighted_html_url"] = (
+                f"/api/chapter?chunk_id={quote(result.chunk.chunk_id)}&q={quote(query)}"
+                "#imac-hit-section"
+            )
             if index < 5:
                 item["section_html"] = self.fragments.section_html(result.chunk)
             else:

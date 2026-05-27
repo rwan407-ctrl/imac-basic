@@ -6,7 +6,8 @@ The tool uses the bundled HTML files in `static\handbook` as the source of truth
 
 The frontend also serves the styled handbook export from `static\handbook`. Search results include:
 
-- Inline HTML evidence for the top five results, rendered directly in the result list with one main page scroll.
+- The single most likely result, ranked by hybrid retrieval and reranking.
+- A full local handbook page positioned at the retrieved section, with a yellow section outline and highlighted query terms.
 - `Open local HTML`: opens the styled local chapter/section in a new tab.
 - `Original source`: opens the original Te Whatu Ora URL.
 

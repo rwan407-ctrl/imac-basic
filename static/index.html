@@ -24,10 +24,8 @@
             <button type="submit">Search</button>
           </div>
           <div class="controls">
-            <label>
-              Results
-              <input id="top-k" type="number" min="1" max="25" value="5" />
-            </label>
+            <input id="top-k" type="hidden" value="1" />
+            <span class="mode-note">Showing the single most likely handbook section</span>
             <label class="check">
               <input id="rerank" type="checkbox" checked />
               Rerank
@@ -38,6 +36,16 @@
 
       <section class="summary" id="summary" hidden></section>
       <section class="results" id="results"></section>
+      <section class="chapter-viewer" id="chapter-viewer" hidden>
+        <div class="chapter-viewer-head">
+          <div>
+            <h2 id="chapter-viewer-title">Highlighted Handbook Page</h2>
+            <p id="chapter-viewer-section"></p>
+          </div>
+          <a id="chapter-viewer-open" href="#" target="_blank" rel="noreferrer">Open highlighted page</a>
+        </div>
+        <iframe id="chapter-frame" title="Highlighted handbook chapter"></iframe>
+      </section>
     </main>
 
     <script src="/app.js"></script>
