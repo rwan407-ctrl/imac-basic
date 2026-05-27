@@ -69,7 +69,7 @@ function scoreInfo(result, index, total) {
     <span class="score-hover">
       <button class="score-symbol ${escapeHtml(result.confidence_label)}" type="button" aria-label="Score details">i</button>
       <span class="score-popover" role="tooltip">
-        <span class="score-title">Candidate ${index + 1} of ${total}</span>
+        <span class="score-title">Rank ${index + 1} of ${total}</span>
         <span class="score-note">Retrieval confidence, not medical truth.</span>
         <span class="score-grid">${rows}</span>
       </span>
@@ -95,7 +95,7 @@ function renderResults(data) {
   activeResultIndex = 0;
 
   summaryEl.hidden = false;
-  summaryEl.innerHTML = `${badge(data.query_confidence_label, data.query_confidence)} ${data.results.length} likely matches in <strong>${data.elapsed_ms} ms</strong>`;
+  summaryEl.innerHTML = `${badge(data.query_confidence_label, data.query_confidence)} ${data.results.length} ranked matches in <strong>${data.elapsed_ms} ms</strong>`;
   if (data.warnings && data.warnings.length) {
     summaryEl.innerHTML += `<div>${data.warnings.map(escapeHtml).join("<br>")}</div>`;
   }
@@ -114,11 +114,11 @@ function renderActiveResult() {
 
   const total = currentData.results.length;
   const result = currentData.results[activeResultIndex];
-  const nextLabel = total > 1 ? `Next likely (${(activeResultIndex + 1) % total + 1}/${total})` : "Next likely";
+  const nextLabel = total > 1 ? `Next match (${(activeResultIndex + 1) % total + 1}/${total})` : "Next match";
   resultsEl.innerHTML = `
     <div class="candidate-strip ${escapeHtml(result.confidence_label)}">
       <div>
-        <strong>Candidate ${activeResultIndex + 1} of ${total}</strong>
+        <strong>Rank ${activeResultIndex + 1} of ${total}</strong>
         <span>${escapeHtml(result.chunk_id)}</span>
       </div>
       <div class="candidate-actions">

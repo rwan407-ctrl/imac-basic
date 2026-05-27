@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>IMAC Handbook Search</title>
-    <link rel="stylesheet" href="/styles.css?v=next-score-4" />
+    <link rel="stylesheet" href="/styles.css?v=ranked-match-1" />
   </head>
   <body>
     <header class="topbar">
@@ -25,7 +25,7 @@
           </div>
           <div class="controls">
             <input id="top-k" type="hidden" value="5" />
-            <span class="mode-note">Showing one handbook page at a time from the top likely matches</span>
+            <span class="mode-note">Showing one handbook page at a time from the top ranked matches</span>
             <label class="check">
               <input id="rerank" type="checkbox" checked />
               Rerank
@@ -44,7 +44,7 @@
           </div>
           <div class="chapter-viewer-actions">
             <span id="chapter-viewer-score"></span>
-            <button id="chapter-viewer-next" class="next-result" type="button">Next likely</button>
+            <button id="chapter-viewer-next" class="next-result" type="button">Next match</button>
             <a id="chapter-viewer-open" href="#" target="_blank" rel="noreferrer">Open highlighted page</a>
           </div>
         </div>
@@ -52,6 +52,6 @@
       </section>
     </main>
 
-    <script src="/app.js?v=next-score-4"></script>
+    <script src="/app.js?v=ranked-match-1"></script>
   </body>
 </html>
