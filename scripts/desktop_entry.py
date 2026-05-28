@@ -5,6 +5,7 @@ import json
 import socket
 import subprocess
 import sys
+import threading
 import time
 import urllib.error
 import urllib.parse
@@ -38,6 +39,10 @@ def _health_url(host: str, port: int) -> str:
     return f"http://{host}:{port}/health"
 
 
+def _search_url(host: str, port: int) -> str:
+    return f"http://{host}:{port}/api/search"
+
+
 def _app_url(
     host: str,
     port: int,
@@ -58,6 +63,28 @@ def _service_is_running(host: str, port: int) -> bool:
         return bool(payload.get("ok"))
     except (OSError, urllib.error.URLError, json.JSONDecodeError):
         return False
+
+
+def _preload_search(host: str, port: int, query: str, reranker_model: str) -> dict:
+    payload = json.dumps(
+        {
+            "query": query,
+            "top_k": 5,
+            "rerank": True,
+            "reranker_model": reranker_model,
+        }
+    ).encode("utf-8")
+    request = urllib.request.Request(
+        _search_url(host, port),
+        data=payload,
+        headers={"Content-Type": "application/json"},
+        method="POST",
+    )
+    with urllib.request.urlopen(request, timeout=600) as response:
+        data = json.loads(response.read().decode("utf-8"))
+    if "error" in data:
+        raise RuntimeError(str(data["error"]))
+    return data
 
 
 def _entry_command(host: str, port: int) -> list[str]:
@@ -199,13 +226,47 @@ def _show_search_window(host: str, port: int) -> None:
     )
     model_hint.pack(side="left", padx=(10, 0))
 
+    def set_busy(is_busy: bool) -> None:
+        entry.config(state="disabled" if is_busy else "normal")
+        button.config(state="disabled" if is_busy else "normal")
+        model_select.config(state="disabled" if is_busy else "readonly")
+
+    def set_status(message: str) -> None:
+        status.config(text=message)
+
     def open_search() -> None:
         query = query_var.get().strip()
         if not query:
             entry.focus_set()
             return
-        webbrowser.open(_app_url(host, port, query, model_choices[model_var.get()]))
-        status.config(text=f"Opened results at 127.0.0.1:{port}")
+        selected_label = model_var.get()
+        selected_model = model_choices[selected_label]
+        loading_text = (
+            "Loading Stronger reranker, then opening results..."
+            if selected_model == "strong"
+            else "Searching, then opening results..."
+        )
+        set_busy(True)
+        set_status(loading_text)
+
+        def worker() -> None:
+            try:
+                _preload_search(host, port, query, selected_model)
+                root.after(0, set_status, "Ready. Opening highlighted handbook page...")
+                webbrowser.open(_app_url(host, port, query, selected_model))
+                root.after(0, set_status, f"Opened results at 127.0.0.1:{port}")
+            except Exception as exc:  # noqa: BLE001 - show launcher-friendly error.
+                root.after(0, set_status, "Search did not complete.")
+                root.after(
+                    0,
+                    messagebox.showerror,
+                    "IMAC Decision Watershed",
+                    f"Could not prepare the search results.\n\n{exc}",
+                )
+            finally:
+                root.after(0, set_busy, False)
+
+        threading.Thread(target=worker, daemon=True).start()
 
     button = tk.Button(
         row,

@@ -40,7 +40,7 @@ To try the "Decision Watershed" desktop-style entry point:
 python scripts\desktop_entry.py
 ```
 
-This opens a small local search bar. The browser does not open until you click `Search`, then it opens directly into highlighted handbook evidence for that query. If the local service is already running on port `8765`, the search bar reuses it.
+This opens a small local search bar. The browser does not open until you click `Search`. The launcher first prepares the retrieval request locally, so a first-time `Stronger` reranker load stays inside the search window; once the model and results are ready, it opens directly into highlighted handbook evidence for that query. If the local service is already running on port `8765`, the search bar reuses it.
 
 The search bar and web launcher both expose a `Reranker` setting. `Default` keeps the current fast local reranker; `Stronger` uses a larger local cross-encoder and may take longer the first time it is selected.
 
