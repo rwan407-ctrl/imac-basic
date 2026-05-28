@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>IMAC Handbook Search</title>
-    <link rel="stylesheet" href="/styles.css?v=glass-5" />
+    <link rel="stylesheet" href="/styles.css?v=reference-glass-1" />
   </head>
   <body>
     <header class="topbar">
@@ -43,6 +43,11 @@
       <section class="results" id="results"></section>
       <section class="chapter-viewer" id="chapter-viewer" hidden>
         <div class="chapter-viewer-head">
+          <button class="viewer-back" type="button" data-action="back-to-search" aria-label="Back to search">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="m15 18-6-6 6-6"></path>
+            </svg>
+          </button>
           <div>
             <h2 id="chapter-viewer-title">Highlighted Handbook Page</h2>
             <p id="chapter-viewer-section"></p>
@@ -51,13 +56,19 @@
             <span id="chapter-viewer-score"></span>
             <div id="chapter-viewer-nav" class="rank-nav" aria-label="Ranked matches"></div>
             <div id="chapter-viewer-feedback" class="feedback-controls" aria-label="Result feedback"></div>
-            <a id="chapter-viewer-open" href="#" target="_blank" rel="noreferrer">Open highlighted page</a>
+            <a id="chapter-viewer-open" href="#" target="_blank" rel="noreferrer">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+                <path d="M4 4.5A2.5 2.5 0 0 1 6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5z"></path>
+              </svg>
+              <span>Open highlighted page</span>
+            </a>
           </div>
         </div>
         <iframe id="chapter-frame" title="Highlighted handbook chapter"></iframe>
       </section>
     </main>
 
-    <script src="/app.js?v=glass-5"></script>
+    <script src="/app.js?v=reference-glass-1"></script>
   </body>
 </html>

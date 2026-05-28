@@ -69,7 +69,12 @@ function scoreInfo(result, index, total) {
 
   return `
     <span class="score-hover">
-      <button class="score-symbol ${escapeHtml(result.confidence_label)}" type="button" aria-label="Score details">i</button>
+      <button class="score-symbol ${escapeHtml(result.confidence_label)}" type="button" aria-label="Score details">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M12 17v-6"></path>
+          <path d="M12 7h.01"></path>
+        </svg>
+      </button>
       <span class="score-popover" role="tooltip">
         <span class="score-title">${index + 1}/${total}</span>
         <span class="score-note">Retrieval confidence, not medical truth.</span>
@@ -106,6 +111,8 @@ function feedbackControls(result) {
 function rankNavigation(total) {
   const previousDisabled = total <= 1;
   const nextDisabled = total <= 1;
+  const previousIcon = `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 18-6-6 6-6"></path></svg>`;
+  const nextIcon = `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"></path></svg>`;
   const rankButtons = Array.from({ length: total }, (_, index) => {
     const active = index === activeResultIndex;
     return `
@@ -120,10 +127,14 @@ function rankNavigation(total) {
   }).join("");
 
   return `
-    <button class="pager-button" type="button" data-action="previous-result" ${previousDisabled ? "disabled" : ""}>Previous</button>
+    <button class="pager-button" type="button" data-action="previous-result" ${previousDisabled ? "disabled" : ""}>
+      ${previousIcon}<span>Previous</span>
+    </button>
     <span class="rank-buttons">${rankButtons}</span>
     <span class="match-position">${activeResultIndex + 1}/${total}</span>
-    <button class="pager-button" type="button" data-action="next-result" ${nextDisabled ? "disabled" : ""}>Next</button>
+    <button class="pager-button" type="button" data-action="next-result" ${nextDisabled ? "disabled" : ""}>
+      <span>Next</span>${nextIcon}
+    </button>
   `;
 }
 
@@ -153,11 +164,13 @@ function renderResults(data) {
   }
 
   if (!data.results.length) {
+    document.body.classList.remove("reader-mode");
     resultsEl.innerHTML = `<div class="empty">No results</div>`;
     chapterViewer.hidden = true;
     return;
   }
 
+  document.body.classList.add("reader-mode");
   renderActiveResult();
 }
 
@@ -223,7 +236,16 @@ function showRank(index) {
 
 function handleResultControls(event) {
   const target = event.target.closest("button");
-  if (!target || !currentData || !currentData.results.length) return;
+  if (!target) return;
+
+  if (target.dataset.action === "back-to-search") {
+    document.body.classList.remove("reader-mode");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+    queryInput.focus({ preventScroll: true });
+    return;
+  }
+
+  if (!currentData || !currentData.results.length) return;
 
   if (target.dataset.action === "next-result") {
     showNextResult();
@@ -257,6 +279,7 @@ form.addEventListener("submit", async (event) => {
   event.preventDefault();
   const query = queryInput.value.trim();
   if (!query) return;
+  document.body.classList.remove("reader-mode");
   resultsEl.innerHTML = `<div class="empty">Searching...</div>`;
   summaryEl.hidden = true;
 

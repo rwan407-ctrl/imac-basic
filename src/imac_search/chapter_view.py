@@ -12,32 +12,58 @@ from .text import tokenize
 
 VIEWER_STYLE = """
 <style>
+html {
+  background: transparent !important;
+  scroll-behavior: smooth !important;
+}
+body {
+  background: transparent !important;
+}
+.main-content {
+  padding-top: 1.5rem !important;
+  padding-bottom: 3.5rem !important;
+}
+.page-standard {
+  display: block !important;
+  max-width: 1280px !important;
+  margin-right: auto !important;
+  margin-left: auto !important;
+  padding-right: 3rem !important;
+  padding-left: 3rem !important;
+}
+.page-standard__main-content {
+  max-width: 1180px !important;
+  margin-right: auto !important;
+  margin-left: auto !important;
+}
 .imac-hit-section {
   position: relative !important;
-  outline: 6px solid #ffd84d !important;
-  outline-offset: 8px !important;
-  border-radius: 6px !important;
-  background: rgba(255, 236, 97, 0.18) !important;
-  box-shadow: 0 0 0 9999px rgba(255, 255, 255, 0.12) !important;
-  scroll-margin-top: 32px !important;
+  border: 1px solid rgba(242, 200, 75, 0.52) !important;
+  border-left: 4px solid #f1c84b !important;
+  border-radius: 8px !important;
+  padding: 1.45rem 1.8rem !important;
+  background: rgba(255, 253, 235, 0.72) !important;
+  box-shadow: 0 18px 50px rgba(60, 72, 86, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.82) !important;
+  scroll-margin-top: 120px !important;
 }
 .imac-hit-banner {
-  display: inline-flex !important;
-  align-items: center !important;
-  gap: 0.4rem !important;
-  margin: 0.25rem 0 1rem !important;
-  padding: 0.45rem 0.75rem !important;
-  border: 1px solid #e0b400 !important;
-  border-radius: 6px !important;
-  background: #fff1a6 !important;
-  color: #3f3200 !important;
-  font: 700 0.875rem/1.3 system-ui, sans-serif !important;
+  display: none !important;
 }
 mark.imac-hit-term {
-  border-radius: 3px !important;
-  padding: 0 0.08em !important;
-  background: #ffdf4d !important;
+  border-radius: 4px !important;
+  padding: 0.02em 0.18em !important;
+  background: #ffe8a6 !important;
+  box-shadow: inset 0 -0.08em 0 rgba(242, 200, 75, 0.32) !important;
   color: inherit !important;
+}
+@media (max-width: 720px) {
+  .page-standard {
+    padding-right: 1rem !important;
+    padding-left: 1rem !important;
+  }
+  .imac-hit-section {
+    padding: 1rem !important;
+  }
 }
 a.external {
   display: inline !important;
