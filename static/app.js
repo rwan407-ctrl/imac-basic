@@ -3,6 +3,12 @@ const queryInput = document.querySelector("#query");
 const topKInput = document.querySelector("#top-k");
 const rerankInput = document.querySelector("#rerank");
 const rerankerModelInput = document.querySelector("#reranker-model");
+const testQuestionSelect = document.querySelector("#test-question-select");
+const testRunButton = document.querySelector("#test-run");
+const testSaveButton = document.querySelector("#test-save");
+const testPinButton = document.querySelector("#test-pin");
+const testDeleteButton = document.querySelector("#test-delete");
+const testStatusEl = document.querySelector("#test-status");
 const resultsEl = document.querySelector("#results");
 const summaryEl = document.querySelector("#summary");
 const statusEl = document.querySelector("#status");
@@ -19,9 +25,34 @@ const chapterViewerFeedback = document.querySelector("#chapter-viewer-feedback")
 const chapterFrame = document.querySelector("#chapter-frame");
 
 const SEARCH_POOL_SIZE = 5;
+const TEST_BANK_STORAGE_KEY = "imac.testQuestions.v1";
+const BUILTIN_TEST_QUESTIONS = [
+  {
+    id: "builtin-mmr-pregnancy",
+    question: "MMR contraindications during pregnancy",
+  },
+  {
+    id: "builtin-anaphylaxis-adrenaline",
+    question: "anaphylaxis adrenaline dose",
+  },
+  {
+    id: "builtin-zoster-eligibility",
+    question: "zoster vaccine eligibility",
+  },
+  {
+    id: "builtin-six-week-schedule",
+    question: "6-week immunisation schedule",
+  },
+  {
+    id: "builtin-rotavirus-age-limits",
+    question: "rotavirus vaccine age limits",
+  },
+];
 let currentData = null;
 let activeResultIndex = 0;
 const feedbackByChunk = new Map();
+let memoryTestBank = { custom: [], pinned: {}, hiddenBuiltins: [] };
+let testBank = loadTestBank();
 
 function expandSearch(focusInput = true) {
   searchPanel.classList.add("expanded");
@@ -48,6 +79,40 @@ function escapeHtml(value) {
 
 function badge(label, confidence) {
   return `<span class="badge ${label}">${label} ${Math.round(confidence * 100)}%</span>`;
+}
+
+async function requestJson(url, options = {}) {
+  if (typeof fetch === "function") {
+    const response = await fetch(url, options);
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.error || "Request failed");
+    return data;
+  }
+  if (typeof XMLHttpRequest === "undefined") {
+    throw new Error("No browser request API is available.");
+  }
+
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    xhr.open(options.method || "GET", url, true);
+    Object.entries(options.headers || {}).forEach(([key, value]) => xhr.setRequestHeader(key, value));
+    xhr.onload = () => {
+      let data = {};
+      try {
+        data = JSON.parse(xhr.responseText || "{}");
+      } catch (_error) {
+        reject(new Error("Request returned invalid JSON"));
+        return;
+      }
+      if (xhr.status < 200 || xhr.status >= 300) {
+        reject(new Error(data.error || "Request failed"));
+        return;
+      }
+      resolve(data);
+    };
+    xhr.onerror = () => reject(new Error("Request failed"));
+    xhr.send(options.body || null);
+  });
 }
 
 function scoreLabel(key) {
@@ -126,6 +191,187 @@ function feedbackControls(result) {
   return `${feedbackButton("up", currentValue)}${feedbackButton("down", currentValue)}`;
 }
 
+function normalizeQueryText(value) {
+  return String(value || "").replace(/\s+/g, " ").trim();
+}
+
+function loadTestBank() {
+  try {
+    if (typeof localStorage === "undefined") {
+      return cloneTestBank(memoryTestBank);
+    }
+    const parsed = JSON.parse(localStorage.getItem(TEST_BANK_STORAGE_KEY) || "{}");
+    return {
+      custom: Array.isArray(parsed.custom) ? parsed.custom : [],
+      pinned: parsed.pinned && typeof parsed.pinned === "object" ? parsed.pinned : {},
+      hiddenBuiltins: Array.isArray(parsed.hiddenBuiltins) ? parsed.hiddenBuiltins : [],
+    };
+  } catch (_error) {
+    return cloneTestBank(memoryTestBank);
+  }
+}
+
+function cloneTestBank(bank) {
+  return {
+    custom: [...(bank.custom || [])],
+    pinned: { ...(bank.pinned || {}) },
+    hiddenBuiltins: [...(bank.hiddenBuiltins || [])],
+  };
+}
+
+function saveTestBank() {
+  memoryTestBank = cloneTestBank(testBank);
+  try {
+    if (typeof localStorage !== "undefined") {
+      localStorage.setItem(TEST_BANK_STORAGE_KEY, JSON.stringify(testBank));
+    }
+  } catch (_error) {
+    // In private or embedded browser contexts, keep the session-local copy.
+  }
+}
+
+function testStatus(message) {
+  if (testStatusEl) testStatusEl.textContent = message;
+}
+
+function allTestQuestions(includeHidden = false) {
+  const hidden = new Set(testBank.hiddenBuiltins || []);
+  const builtins = BUILTIN_TEST_QUESTIONS
+    .filter((item) => includeHidden || !hidden.has(item.id))
+    .map((item, index) => ({
+      ...item,
+      builtIn: true,
+      pinned: Boolean(testBank.pinned?.[item.id]),
+      order: index,
+    }));
+  const custom = (testBank.custom || []).map((item, index) => ({
+    id: item.id,
+    question: item.question,
+    builtIn: false,
+    pinned: Boolean(item.pinned),
+    order: BUILTIN_TEST_QUESTIONS.length + index,
+  }));
+
+  return [...builtins, ...custom].sort((a, b) => {
+    if (a.pinned !== b.pinned) return a.pinned ? -1 : 1;
+    return a.order - b.order;
+  });
+}
+
+function selectedTestQuestion() {
+  return allTestQuestions().find((item) => item.id === testQuestionSelect.value);
+}
+
+function renderTestQuestions(selectedId = testQuestionSelect?.value || "") {
+  if (!testQuestionSelect) return;
+  const questions = allTestQuestions();
+  if (!questions.length) {
+    testQuestionSelect.innerHTML = `<option value="">No test questions saved</option>`;
+    testRunButton.disabled = true;
+    testPinButton.disabled = true;
+    testDeleteButton.disabled = true;
+    return;
+  }
+
+  testQuestionSelect.innerHTML = questions
+    .map((item) => {
+      const label = `${item.pinned ? "[Pinned] " : ""}${item.question}${item.builtIn ? " (built-in)" : ""}`;
+      return `<option value="${escapeHtml(item.id)}">${escapeHtml(label)}</option>`;
+    })
+    .join("");
+
+  const stillExists = questions.some((item) => item.id === selectedId);
+  testQuestionSelect.value = stillExists ? selectedId : questions[0].id;
+  const selected = selectedTestQuestion();
+  testRunButton.disabled = !selected;
+  testPinButton.disabled = !selected;
+  testDeleteButton.disabled = !selected;
+  testPinButton.textContent = selected?.pinned ? "Unpin" : "Pin";
+}
+
+function selectTestQuestion(id) {
+  renderTestQuestions(id);
+  const selected = selectedTestQuestion();
+  if (!selected) return;
+  queryInput.value = selected.question;
+}
+
+function saveCurrentTestQuestion() {
+  const question = normalizeQueryText(queryInput.value);
+  if (!question) {
+    testStatus("Type a question first.");
+    queryInput.focus();
+    return;
+  }
+
+  const duplicate = allTestQuestions(true).find(
+    (item) => item.question.toLowerCase() === question.toLowerCase(),
+  );
+  if (duplicate) {
+    if (duplicate.builtIn) {
+      testBank.hiddenBuiltins = (testBank.hiddenBuiltins || []).filter((id) => id !== duplicate.id);
+    }
+    saveTestBank();
+    selectTestQuestion(duplicate.id);
+    testStatus("Already in the test list.");
+    return;
+  }
+
+  const id =
+    typeof crypto !== "undefined" && crypto.randomUUID
+      ? `custom-${crypto.randomUUID()}`
+      : `custom-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+  testBank.custom = [
+    ...(testBank.custom || []),
+    {
+      id,
+      question,
+      pinned: false,
+      createdAt: new Date().toISOString(),
+    },
+  ];
+  saveTestBank();
+  selectTestQuestion(id);
+  testStatus("Saved to test questions.");
+}
+
+function toggleSelectedTestPin() {
+  const selected = selectedTestQuestion();
+  if (!selected) return;
+
+  if (selected.builtIn) {
+    if (testBank.pinned?.[selected.id]) {
+      delete testBank.pinned[selected.id];
+    } else {
+      testBank.pinned = { ...(testBank.pinned || {}), [selected.id]: true };
+    }
+  } else {
+    testBank.custom = (testBank.custom || []).map((item) =>
+      item.id === selected.id ? { ...item, pinned: !item.pinned } : item,
+    );
+  }
+  saveTestBank();
+  renderTestQuestions(selected.id);
+  testStatus(selected.pinned ? "Unpinned." : "Pinned.");
+}
+
+function deleteSelectedTestQuestion() {
+  const selected = selectedTestQuestion();
+  if (!selected) return;
+
+  if (selected.builtIn) {
+    testBank.hiddenBuiltins = Array.from(new Set([...(testBank.hiddenBuiltins || []), selected.id]));
+    if (testBank.pinned?.[selected.id]) delete testBank.pinned[selected.id];
+  } else {
+    testBank.custom = (testBank.custom || []).filter((item) => item.id !== selected.id);
+  }
+  saveTestBank();
+  renderTestQuestions();
+  const next = selectedTestQuestion();
+  if (next) queryInput.value = next.question;
+  testStatus("Deleted from test questions.");
+}
+
 function rankNavigation(total) {
   const previousDisabled = total <= 1;
   const nextDisabled = total <= 1;
@@ -158,9 +404,7 @@ function rankNavigation(total) {
 
 async function loadStats() {
   try {
-    const response = await fetch("/api/stats");
-    const data = await response.json();
-    if (!response.ok) throw new Error(data.error || "Index unavailable");
+    const data = await requestJson("/api/stats");
     statusEl.textContent = "ready";
     statusEl.dataset.state = "ready";
     statsEl.textContent = `${data.chunk_count} chunks across ${data.chapter_count} chapters`;
@@ -312,7 +556,7 @@ async function performSearch(query) {
   summaryEl.hidden = true;
 
   try {
-    const response = await fetch("/api/search", {
+    const data = await requestJson("/api/search", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -322,8 +566,6 @@ async function performSearch(query) {
         reranker_model: rerankerModelInput.value || "default",
       }),
     });
-    const data = await response.json();
-    if (!response.ok) throw new Error(data.error || "Search failed");
     renderResults(data);
   } catch (error) {
     expandSearch(false);
@@ -338,6 +580,30 @@ form.addEventListener("submit", async (event) => {
   await performSearch(queryInput.value.trim());
 });
 
+testQuestionSelect.addEventListener("change", () => {
+  const selected = selectedTestQuestion();
+  if (!selected) return;
+  queryInput.value = selected.question;
+  renderTestQuestions(selected.id);
+  testStatus("Loaded into the search box.");
+});
+
+testRunButton.addEventListener("click", async () => {
+  const selected = selectedTestQuestion();
+  const query = normalizeQueryText(selected?.question || queryInput.value);
+  if (!query) {
+    testStatus("Choose or type a test question first.");
+    return;
+  }
+  queryInput.value = query;
+  testStatus("Running test question...");
+  await performSearch(query);
+});
+
+testSaveButton.addEventListener("click", saveCurrentTestQuestion);
+testPinButton.addEventListener("click", toggleSelectedTestPin);
+testDeleteButton.addEventListener("click", deleteSelectedTestQuestion);
+
 searchLauncher.addEventListener("click", () => expandSearch());
 searchLauncher.addEventListener("focus", () => expandSearch());
 searchPanel.addEventListener("pointerenter", () => {
@@ -350,6 +616,7 @@ searchPanel.addEventListener("mouseleave", collapseSearchIfIdle);
 searchPanel.addEventListener("focusout", collapseSearchIfIdle);
 
 async function initialize() {
+  renderTestQuestions();
   await loadStats();
   const params = new URLSearchParams(window.location.search);
   const urlQuery = params.get("q");

@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>IMAC Handbook Search</title>
-    <link rel="stylesheet" href="/styles.css?v=jina-reranker-1" />
+    <link rel="stylesheet" href="/styles.css?v=test-questions-1" />
   </head>
   <body>
     <header class="topbar">
@@ -56,6 +56,20 @@
                 <option value="jina">Strongest (Jina)</option>
               </select>
             </details>
+            <details class="test-menu" id="test-menu">
+              <summary>Tests</summary>
+              <div class="test-panel">
+                <label for="test-question-select">Test question</label>
+                <select id="test-question-select" name="test-question-select"></select>
+                <div class="test-actions">
+                  <button type="button" id="test-run">Run</button>
+                  <button type="button" id="test-save">Save current</button>
+                  <button type="button" id="test-pin">Pin</button>
+                  <button type="button" id="test-delete">Delete</button>
+                </div>
+                <p id="test-status"></p>
+              </div>
+            </details>
           </div>
         </form>
       </section>
@@ -90,6 +104,6 @@
       </section>
     </main>
 
-    <script src="/app.js?v=jina-reranker-1"></script>
+    <script src="/app.js?v=test-questions-1"></script>
   </body>
 </html>

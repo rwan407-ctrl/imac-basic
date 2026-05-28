@@ -13,6 +13,7 @@ The frontend also serves the styled handbook export from `static\handbook`. Sear
 - A full local handbook page positioned at the retrieved section, with a yellow section outline and highlighted query terms.
 - `Open local HTML`: opens the styled local chapter/section in a new tab.
 - `Original source`: opens the original Te Whatu Ora URL.
+- A `Tests` menu in the search launcher with built-in smoke-test questions plus user-saved questions. Saved questions can be pinned, selected, run, or deleted; supported browsers persist them in local storage.
 
 ## Run
 
