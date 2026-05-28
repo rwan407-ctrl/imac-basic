@@ -39,6 +39,19 @@ mark.imac-hit-term {
   background: #ffdf4d !important;
   color: inherit !important;
 }
+a.external {
+  display: inline !important;
+}
+a.external svg.external-link,
+svg.custom__icon.external-link {
+  display: inline-block !important;
+  width: 0.82em !important;
+  min-width: 0.82em !important;
+  max-width: 0.82em !important;
+  height: 0.82em !important;
+  margin-left: 0.16em !important;
+  vertical-align: -0.08em !important;
+}
 </style>
 """
 

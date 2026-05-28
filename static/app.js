@@ -133,9 +133,11 @@ async function loadStats() {
     const data = await response.json();
     if (!response.ok) throw new Error(data.error || "Index unavailable");
     statusEl.textContent = "ready";
+    statusEl.dataset.state = "ready";
     statsEl.textContent = `${data.chunk_count} chunks across ${data.chapter_count} chapters`;
   } catch (error) {
     statusEl.textContent = "offline";
+    statusEl.dataset.state = "offline";
     statsEl.textContent = error.message;
   }
 }
@@ -172,8 +174,6 @@ function renderActiveResult() {
       </div>
       <div class="candidate-actions">
         ${badge(result.confidence_label, result.confidence)}
-        <div class="rank-nav" aria-label="Ranked matches">${rankNavigation(total)}</div>
-        <div class="feedback-controls" aria-label="Result feedback">${feedbackControls(result)}</div>
       </div>
     </div>
     <article class="result best-result ${escapeHtml(result.confidence_label)}">

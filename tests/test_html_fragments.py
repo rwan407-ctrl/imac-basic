@@ -80,6 +80,7 @@ class HtmlFragmentTests(unittest.TestCase):
             self.assertIn('id="imac-hit-section"', html)
             self.assertIn("Retrieved chunk: c1", html)
             self.assertIn("imac-hit-term", html)
+            self.assertIn("svg.external-link", html)
             self.assertNotIn("window.bad", html)
 
 
