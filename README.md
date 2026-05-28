@@ -42,7 +42,7 @@ python scripts\desktop_entry.py
 
 This opens a small local search bar. The browser does not open until you click `Search`. The launcher first prepares the retrieval request locally, so a first-time `Stronger` reranker load stays inside the search window; once the model and results are ready, it opens directly into highlighted handbook evidence for that query. If the local service is already running on port `8765`, the search bar reuses it.
 
-The search bar and web launcher both expose a `Reranker` setting. `Default` keeps the current fast local reranker; `Stronger` uses a larger local cross-encoder and may take longer the first time it is selected.
+The search bar and web launcher both expose a `Reranker` setting. `Default` keeps the current fast local reranker; `Stronger` uses a larger local cross-encoder; `Strongest (Jina)` uses `jinaai/jina-reranker-v2-base-multilingual` with local `sentence-transformers` execution. Stronger models may take longer the first time they are selected because the model has to be downloaded and loaded. The Jina model card lists a CC-BY-NC-4.0 license, so review licensing before commercial deployment.
 
 To start only the local service in the background without showing the search bar:
 
@@ -100,6 +100,8 @@ Search body:
   "reranker_model": "default"
 }
 ```
+
+Available reranker values are `default`, `strong`, and `jina`.
 
 Confidence is retrieval confidence only. It is not a measure of clinical correctness.
 

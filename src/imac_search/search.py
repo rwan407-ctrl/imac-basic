@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import math
+import inspect
 import time
 from pathlib import Path
 from typing import Any
@@ -36,6 +37,10 @@ def _sigmoid(value: float) -> float:
         return 1.0 / (1.0 + z)
     z = math.exp(value)
     return z / (1.0 + z)
+
+
+def _bounded(value: float) -> float:
+    return max(0.0, min(1.0, value))
 
 
 class SearchEngine:
@@ -78,6 +83,21 @@ class SearchEngine:
         key = model_key if model_key in RERANKER_MODEL_PRESETS else "default"
         return key, RERANKER_MODEL_PRESETS[key]["model"]
 
+    def _cross_encoder_kwargs(self, cross_encoder_cls: Any, model_key: str) -> dict[str, Any]:
+        kwargs = dict(RERANKER_MODEL_PRESETS[model_key].get("cross_encoder_kwargs", {}))
+        signature = inspect.signature(cross_encoder_cls.__init__)
+        parameters = signature.parameters
+        if "model_kwargs" not in parameters and "model_kwargs" in kwargs:
+            model_kwargs = kwargs.pop("model_kwargs")
+            if "automodel_args" in parameters:
+                kwargs["automodel_args"] = model_kwargs
+        return {key: value for key, value in kwargs.items() if key in parameters}
+
+    def _normalize_reranker_score(self, model_key: str, raw_value: float) -> float:
+        if RERANKER_MODEL_PRESETS[model_key].get("score_transform") == "identity":
+            return _bounded(raw_value)
+        return _sigmoid(raw_value)
+
     def _get_reranker(self, model_key: str):
         key, model_name = self._resolve_reranker_model(model_key)
         if key in self._rerankers:
@@ -85,7 +105,10 @@ class SearchEngine:
         try:
             from sentence_transformers import CrossEncoder
 
-            self._rerankers[key] = CrossEncoder(model_name)
+            self._rerankers[key] = CrossEncoder(
+                model_name,
+                **self._cross_encoder_kwargs(CrossEncoder, key),
+            )
             self.reranker_errors.pop(key, None)
             return key, model_name, self._rerankers[key]
         except Exception as exc:
@@ -155,7 +178,7 @@ class SearchEngine:
                 for result, raw in zip(results, raw_scores):
                     raw_value = float(raw)
                     result.reranker_score = raw_value
-                    result.reranker_norm = _sigmoid(raw_value)
+                    result.reranker_norm = self._normalize_reranker_score(reranker_key, raw_value)
                     result.final_score = 0.80 * result.reranker_norm + 0.20 * result.rrf_score
                 results.sort(key=lambda item: item.final_score, reverse=True)
             else:

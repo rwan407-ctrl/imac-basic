@@ -160,7 +160,7 @@ def _show_search_window(host: str, port: int) -> None:
 
     root = tk.Tk()
     root.title("IMAC Decision Watershed")
-    root.geometry("560x198")
+    root.geometry("610x198")
     root.resizable(False, False)
     root.configure(bg="#eef4f8")
 
@@ -206,20 +206,24 @@ def _show_search_window(host: str, port: int) -> None:
     )
     model_label.pack(side="left")
 
-    model_choices = {"Default": "default", "Stronger": "strong"}
+    model_choices = {
+        "Default": "default",
+        "Stronger": "strong",
+        "Strongest (Jina)": "jina",
+    }
     model_var = tk.StringVar(value="Default")
     model_select = ttk.Combobox(
         settings_row,
         textvariable=model_var,
         values=tuple(model_choices.keys()),
         state="readonly",
-        width=14,
+        width=18,
     )
     model_select.pack(side="left", padx=(8, 0))
 
     model_hint = tk.Label(
         settings_row,
-        text="Default is faster; Stronger may take longer the first time.",
+        text="Default is faster; stronger models may take longer the first time.",
         bg="#eef4f8",
         fg="#657084",
         font=("Segoe UI", 9),
@@ -242,8 +246,8 @@ def _show_search_window(host: str, port: int) -> None:
         selected_label = model_var.get()
         selected_model = model_choices[selected_label]
         loading_text = (
-            "Loading Stronger reranker, then opening results..."
-            if selected_model == "strong"
+            "Loading local reranker, then opening results..."
+            if selected_model in {"strong", "jina"}
             else "Searching, then opening results..."
         )
         set_busy(True)

@@ -23,6 +23,7 @@ RERANKER_MODEL_PRESETS = {
         "label": "Default",
         "description": "Fast local reranker",
         "model": DEFAULT_RERANKER_MODEL,
+        "score_transform": "sigmoid",
     },
     "strong": {
         "label": "Stronger",
@@ -31,6 +32,23 @@ RERANKER_MODEL_PRESETS = {
             "IMAC_STRONG_RERANKER_MODEL",
             "cross-encoder/ms-marco-MiniLM-L-12-v2",
         ),
+        "score_transform": "sigmoid",
+    },
+    "jina": {
+        "label": "Strongest (Jina)",
+        "description": "Jina AI multilingual local reranker",
+        "model": os.getenv(
+            "IMAC_JINA_RERANKER_MODEL",
+            "jinaai/jina-reranker-v2-base-multilingual",
+        ),
+        "score_transform": "identity",
+        "cross_encoder_kwargs": {
+            "trust_remote_code": True,
+            "max_length": 1024,
+            "model_kwargs": {
+                "dtype": "auto",
+            },
+        },
     },
 }
 
