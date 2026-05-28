@@ -6,6 +6,7 @@ The tool uses the bundled HTML files in `static\handbook` as the source of truth
 
 The frontend also serves the styled handbook export from `static\handbook`. Search results include:
 
+- A "Decision Watershed" launcher mode: the search box starts as a bottom-right floating icon and expands immediately on hover/focus.
 - One highlighted result at a time, ranked by hybrid retrieval and reranking, with previous/next controls and a compact rank list for moving through the top ranked matches.
 - Placeholder thumbs-up/thumbs-down buttons for future relevance feedback workflows.
 - A compact score icon that reveals the retrieval score breakdown on hover/focus.
@@ -30,6 +31,22 @@ static\handbook
 ```
 
 To build from a different HTML export, set `IMAC_HTML_DIR` before running `scripts\build_index.py`.
+
+## Windows Launcher
+
+To try the "Decision Watershed" desktop-style entry point:
+
+```powershell
+python scripts\desktop_entry.py
+```
+
+To build a Windows executable:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts\build_decision_watershed_exe.ps1
+```
+
+The build script packages the current `static` and `data` folders, so run `python scripts\build_index.py` first.
 
 ## API
 

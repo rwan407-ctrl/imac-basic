@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>IMAC Handbook Search</title>
-    <link rel="stylesheet" href="/styles.css?v=reference-glass-1" />
+    <link rel="stylesheet" href="/styles.css?v=decision-watershed-2" />
   </head>
   <body>
     <header class="topbar">
@@ -21,12 +21,24 @@
     </header>
 
     <main>
-      <section class="search-panel">
+      <section class="search-panel" id="search-panel" aria-label="Handbook search launcher">
+        <button class="search-launcher" id="search-launcher" type="button" aria-label="Open handbook search">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="m21 21-4.3-4.3"></path>
+            <circle cx="11" cy="11" r="7"></circle>
+          </svg>
+        </button>
         <form id="search-form">
-          <label for="query">Search</label>
+          <label for="query">Search handbook</label>
           <div class="search-row">
             <input id="query" name="query" autocomplete="off" value="MMR contraindications during pregnancy" />
-            <button type="submit">Search</button>
+            <button class="search-submit" type="submit">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M5 12h14"></path>
+                <path d="m13 6 6 6-6 6"></path>
+              </svg>
+              <span>Search</span>
+            </button>
           </div>
           <div class="controls">
             <input id="top-k" type="hidden" value="5" />
@@ -69,6 +81,6 @@
       </section>
     </main>
 
-    <script src="/app.js?v=reference-glass-1"></script>
+    <script src="/app.js?v=decision-watershed-2"></script>
   </body>
 </html>

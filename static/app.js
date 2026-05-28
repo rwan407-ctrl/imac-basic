@@ -6,6 +6,8 @@ const resultsEl = document.querySelector("#results");
 const summaryEl = document.querySelector("#summary");
 const statusEl = document.querySelector("#status");
 const statsEl = document.querySelector("#stats");
+const searchPanel = document.querySelector("#search-panel");
+const searchLauncher = document.querySelector("#search-launcher");
 const chapterViewer = document.querySelector("#chapter-viewer");
 const chapterViewerTitle = document.querySelector("#chapter-viewer-title");
 const chapterViewerSection = document.querySelector("#chapter-viewer-section");
@@ -19,6 +21,21 @@ const SEARCH_POOL_SIZE = 5;
 let currentData = null;
 let activeResultIndex = 0;
 const feedbackByChunk = new Map();
+
+function expandSearch(focusInput = true) {
+  searchPanel.classList.add("expanded");
+  if (focusInput) {
+    window.setTimeout(() => queryInput.focus(), 0);
+  }
+}
+
+function collapseSearchIfIdle() {
+  window.setTimeout(() => {
+    if (!searchPanel.matches(":hover") && !searchPanel.contains(document.activeElement)) {
+      searchPanel.classList.remove("expanded");
+    }
+  }, 90);
+}
 
 function escapeHtml(value) {
   return String(value)
@@ -165,12 +182,14 @@ function renderResults(data) {
 
   if (!data.results.length) {
     document.body.classList.remove("reader-mode");
+    expandSearch(false);
     resultsEl.innerHTML = `<div class="empty">No results</div>`;
     chapterViewer.hidden = true;
     return;
   }
 
   document.body.classList.add("reader-mode");
+  searchPanel.classList.remove("expanded");
   renderActiveResult();
 }
 
@@ -241,7 +260,7 @@ function handleResultControls(event) {
   if (target.dataset.action === "back-to-search") {
     document.body.classList.remove("reader-mode");
     window.scrollTo({ top: 0, behavior: "smooth" });
-    queryInput.focus({ preventScroll: true });
+    expandSearch();
     return;
   }
 
@@ -280,6 +299,8 @@ form.addEventListener("submit", async (event) => {
   const query = queryInput.value.trim();
   if (!query) return;
   document.body.classList.remove("reader-mode");
+  form.dataset.state = "searching";
+  searchPanel.classList.add("expanded");
   resultsEl.innerHTML = `<div class="empty">Searching...</div>`;
   summaryEl.hidden = true;
 
@@ -297,8 +318,22 @@ form.addEventListener("submit", async (event) => {
     if (!response.ok) throw new Error(data.error || "Search failed");
     renderResults(data);
   } catch (error) {
+    expandSearch(false);
     resultsEl.innerHTML = `<div class="empty">${escapeHtml(error.message)}</div>`;
+  } finally {
+    delete form.dataset.state;
   }
 });
+
+searchLauncher.addEventListener("click", () => expandSearch());
+searchLauncher.addEventListener("focus", () => expandSearch());
+searchPanel.addEventListener("pointerenter", () => {
+  if (!document.body.classList.contains("reader-mode")) expandSearch();
+});
+searchPanel.addEventListener("mouseenter", () => {
+  if (!document.body.classList.contains("reader-mode")) expandSearch();
+});
+searchPanel.addEventListener("mouseleave", collapseSearchIfIdle);
+searchPanel.addEventListener("focusout", collapseSearchIfIdle);
 
 loadStats();
