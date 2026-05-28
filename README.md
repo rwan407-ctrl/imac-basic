@@ -42,6 +42,8 @@ python scripts\desktop_entry.py
 
 This opens a small local search bar. The browser does not open until you click `Search`, then it opens directly into highlighted handbook evidence for that query. If the local service is already running on port `8765`, the search bar reuses it.
 
+The search bar and web launcher both expose a `Reranker` setting. `Default` keeps the current fast local reranker; `Stronger` uses a larger local cross-encoder and may take longer the first time it is selected.
+
 To start only the local service in the background without showing the search bar:
 
 ```powershell
@@ -94,7 +96,8 @@ Search body:
 {
   "query": "MMR contraindications during pregnancy",
   "top_k": 5,
-  "rerank": true
+  "rerank": true,
+  "reranker_model": "default"
 }
 ```
 

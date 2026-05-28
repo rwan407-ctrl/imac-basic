@@ -2,6 +2,7 @@ const form = document.querySelector("#search-form");
 const queryInput = document.querySelector("#query");
 const topKInput = document.querySelector("#top-k");
 const rerankInput = document.querySelector("#rerank");
+const rerankerModelInput = document.querySelector("#reranker-model");
 const resultsEl = document.querySelector("#results");
 const summaryEl = document.querySelector("#summary");
 const statusEl = document.querySelector("#status");
@@ -163,6 +164,14 @@ async function loadStats() {
     statusEl.textContent = "ready";
     statusEl.dataset.state = "ready";
     statsEl.textContent = `${data.chunk_count} chunks across ${data.chapter_count} chapters`;
+    if (data.reranker_models && rerankerModelInput) {
+      rerankerModelInput.innerHTML = data.reranker_models
+        .map((item) => {
+          const selected = item.key === "default" ? "selected" : "";
+          return `<option value="${escapeHtml(item.key)}" ${selected}>${escapeHtml(item.label)}</option>`;
+        })
+        .join("");
+    }
   } catch (error) {
     statusEl.textContent = "offline";
     statusEl.dataset.state = "offline";
@@ -310,6 +319,7 @@ async function performSearch(query) {
         query,
         top_k: Number(topKInput.value || SEARCH_POOL_SIZE),
         rerank: rerankInput.checked,
+        reranker_model: rerankerModelInput.value || "default",
       }),
     });
     const data = await response.json();
@@ -343,6 +353,10 @@ async function initialize() {
   await loadStats();
   const params = new URLSearchParams(window.location.search);
   const urlQuery = params.get("q");
+  const urlRerankerModel = params.get("reranker_model");
+  if (urlRerankerModel && rerankerModelInput.querySelector(`option[value="${CSS.escape(urlRerankerModel)}"]`)) {
+    rerankerModelInput.value = urlRerankerModel;
+  }
   if (urlQuery) {
     queryInput.value = urlQuery;
     await performSearch(urlQuery.trim());

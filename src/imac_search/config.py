@@ -15,6 +15,24 @@ def _project_root() -> Path:
 
 PROJECT_ROOT = _project_root()
 DEFAULT_SOURCE_DIR = PROJECT_ROOT / "static" / "handbook"
+DEFAULT_RERANKER_MODEL = os.getenv(
+    "IMAC_RERANKER_MODEL", "cross-encoder/ms-marco-MiniLM-L-6-v2"
+)
+RERANKER_MODEL_PRESETS = {
+    "default": {
+        "label": "Default",
+        "description": "Fast local reranker",
+        "model": DEFAULT_RERANKER_MODEL,
+    },
+    "strong": {
+        "label": "Stronger",
+        "description": "Larger local reranker",
+        "model": os.getenv(
+            "IMAC_STRONG_RERANKER_MODEL",
+            "cross-encoder/ms-marco-MiniLM-L-12-v2",
+        ),
+    },
+}
 
 
 @dataclass(frozen=True)
@@ -27,7 +45,7 @@ class Settings:
         "IMAC_EMBEDDING_MODEL", "sentence-transformers/all-MiniLM-L6-v2"
     )
     reranker_model: str = os.getenv(
-        "IMAC_RERANKER_MODEL", "cross-encoder/ms-marco-MiniLM-L-6-v2"
+        "IMAC_RERANKER_MODEL", DEFAULT_RERANKER_MODEL
     )
     chunk_words: int = int(os.getenv("IMAC_CHUNK_WORDS", "260"))
     chunk_overlap: int = int(os.getenv("IMAC_CHUNK_OVERLAP", "45"))

@@ -12,6 +12,7 @@ import numpy as np
 from .bm25 import BM25Index
 from .confidence import apply_confidence, label_for
 from .config import settings
+from .config import RERANKER_MODEL_PRESETS
 from .dense import EmbeddingModel
 from .fusion import rank_map, reciprocal_rank_fusion, score_map
 from .html_fragments import HtmlFragmentProvider
@@ -45,8 +46,8 @@ class SearchEngine:
         self.bm25 = BM25Index([chunk.text for chunk in self.chunks])
         self.embedder = EmbeddingModel(settings.embedding_model)
         self.fragments = HtmlFragmentProvider(settings.source_dir)
-        self._reranker = None
-        self.reranker_error: str | None = None
+        self._rerankers: dict[str, Any] = {}
+        self.reranker_errors: dict[str, str] = {}
         self.metadata = self._load_metadata()
 
     def _load_metadata(self) -> dict[str, Any]:
@@ -63,33 +64,52 @@ class SearchEngine:
             "source_dir": self.metadata.get("source_dir", str(settings.source_dir)),
             "embedding_model": settings.embedding_model,
             "reranker_model": settings.reranker_model,
-            "reranker_loaded": self._reranker is not None,
-            "reranker_error": self.reranker_error,
+            "reranker_models": [
+                {"key": key, **preset}
+                for key, preset in RERANKER_MODEL_PRESETS.items()
+            ],
+            "reranker_loaded": bool(self._rerankers),
+            "loaded_reranker_models": list(self._rerankers.keys()),
+            "reranker_errors": self.reranker_errors,
             "metadata": self.metadata,
         }
 
-    def _get_reranker(self):
-        if self._reranker is not None:
-            return self._reranker
+    def _resolve_reranker_model(self, model_key: str | None) -> tuple[str, str]:
+        key = model_key if model_key in RERANKER_MODEL_PRESETS else "default"
+        return key, RERANKER_MODEL_PRESETS[key]["model"]
+
+    def _get_reranker(self, model_key: str):
+        key, model_name = self._resolve_reranker_model(model_key)
+        if key in self._rerankers:
+            return key, model_name, self._rerankers[key]
         try:
             from sentence_transformers import CrossEncoder
 
-            self._reranker = CrossEncoder(settings.reranker_model)
-            self.reranker_error = None
-            return self._reranker
+            self._rerankers[key] = CrossEncoder(model_name)
+            self.reranker_errors.pop(key, None)
+            return key, model_name, self._rerankers[key]
         except Exception as exc:
-            self.reranker_error = str(exc)
-            return None
+            self.reranker_errors[key] = str(exc)
+            return key, model_name, None
 
-    def search(self, query: str, top_k: int = 8, rerank: bool = True) -> dict[str, Any]:
+    def search(
+        self,
+        query: str,
+        top_k: int = 8,
+        rerank: bool = True,
+        reranker_model: str | None = None,
+    ) -> dict[str, Any]:
         started = time.time()
         query = query.strip()
         top_k = max(1, min(25, int(top_k)))
+        reranker_key, reranker_model_name = self._resolve_reranker_model(reranker_model)
         if not tokenize(query):
             return {
                 "query": query,
                 "top_k": top_k,
                 "rerank": rerank,
+                "reranker_model": reranker_key,
+                "reranker_model_name": reranker_model_name,
                 "query_confidence": 0.0,
                 "query_confidence_label": "low",
                 "results": [],
@@ -128,7 +148,7 @@ class SearchEngine:
 
         warnings: list[str] = []
         if rerank and results:
-            reranker = self._get_reranker()
+            reranker_key, reranker_model_name, reranker = self._get_reranker(reranker_key)
             if reranker is not None:
                 pairs = [[query, result.chunk.text] for result in results]
                 raw_scores = reranker.predict(pairs, show_progress_bar=False)
@@ -139,7 +159,10 @@ class SearchEngine:
                     result.final_score = 0.80 * result.reranker_norm + 0.20 * result.rrf_score
                 results.sort(key=lambda item: item.final_score, reverse=True)
             else:
-                warnings.append(f"Reranker unavailable; used RRF ranking. {self.reranker_error}")
+                warnings.append(
+                    f"{reranker_key} reranker unavailable; used RRF ranking. "
+                    f"{self.reranker_errors.get(reranker_key)}"
+                )
                 rerank = False
 
         if not rerank:
@@ -182,6 +205,8 @@ class SearchEngine:
             "query": query,
             "top_k": top_k,
             "rerank": rerank,
+            "reranker_model": reranker_key,
+            "reranker_model_name": reranker_model_name,
             "query_confidence": round(query_confidence, 4),
             "query_confidence_label": label_for(query_confidence),
             "results": api_results,

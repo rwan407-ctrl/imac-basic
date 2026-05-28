@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>IMAC Handbook Search</title>
-    <link rel="stylesheet" href="/styles.css?v=decision-watershed-launcher-1" />
+    <link rel="stylesheet" href="/styles.css?v=reranker-settings-1" />
   </head>
   <body>
     <header class="topbar">
@@ -47,6 +47,14 @@
               <input id="rerank" type="checkbox" checked />
               Rerank
             </label>
+            <details class="settings-menu">
+              <summary>Settings</summary>
+              <label for="reranker-model">Reranker</label>
+              <select id="reranker-model" name="reranker-model">
+                <option value="default" selected>Default</option>
+                <option value="strong">Stronger</option>
+              </select>
+            </details>
           </div>
         </form>
       </section>
@@ -81,6 +89,6 @@
       </section>
     </main>
 
-    <script src="/app.js?v=decision-watershed-launcher-1"></script>
+    <script src="/app.js?v=reranker-settings-1"></script>
   </body>
 </html>

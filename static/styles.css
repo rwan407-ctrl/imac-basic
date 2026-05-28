@@ -55,7 +55,8 @@ body::before {
 }
 
 button,
-input {
+input,
+select {
   font: inherit;
 }
 
@@ -65,6 +66,7 @@ button {
 
 button:focus-visible,
 input:focus-visible,
+select:focus-visible,
 a:focus-visible {
   outline: 3px solid rgba(242, 200, 75, 0.9);
   outline-offset: 2px;
@@ -380,6 +382,17 @@ input {
   font-size: 16px;
 }
 
+select {
+  min-height: 36px;
+  border: 1px solid rgba(200, 214, 224, 0.72);
+  border-radius: 6px;
+  padding: 0 10px;
+  background: rgba(255, 255, 255, 0.64);
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 800;
+}
+
 .search-panel input {
   border-color: rgba(200, 214, 224, 0.72);
   background:
@@ -441,6 +454,44 @@ button:hover {
   justify-content: space-between;
   gap: 16px;
   margin-top: 9px;
+}
+
+.settings-menu {
+  position: relative;
+}
+
+.settings-menu summary {
+  min-height: 36px;
+  border: 1px solid rgba(200, 214, 224, 0.86);
+  border-radius: 6px;
+  padding: 8px 10px;
+  background: rgba(255, 255, 255, 0.58);
+  color: var(--accent-dark);
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 800;
+  list-style: none;
+}
+
+.settings-menu summary::-webkit-details-marker {
+  display: none;
+}
+
+.settings-menu[open] {
+  min-width: 166px;
+}
+
+.settings-menu[open] summary {
+  margin-bottom: 8px;
+}
+
+.settings-menu label {
+  margin-bottom: 5px;
+  font-size: 12px;
+}
+
+.settings-menu select {
+  width: 100%;
 }
 
 .mode-note {

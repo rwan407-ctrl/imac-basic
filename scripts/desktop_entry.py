@@ -38,10 +38,16 @@ def _health_url(host: str, port: int) -> str:
     return f"http://{host}:{port}/health"
 
 
-def _app_url(host: str, port: int, query: str | None = None) -> str:
+def _app_url(
+    host: str,
+    port: int,
+    query: str | None = None,
+    reranker_model: str = "default",
+) -> str:
     params = {"version": "decision-watershed"}
     if query:
         params["q"] = query
+        params["reranker_model"] = reranker_model
     return f"http://{host}:{port}/?{urllib.parse.urlencode(params)}"
 
 
@@ -122,11 +128,12 @@ def _serve_forever(host: str, port: int) -> None:
 
 def _show_search_window(host: str, port: int) -> None:
     import tkinter as tk
+    from tkinter import ttk
     from tkinter import messagebox
 
     root = tk.Tk()
     root.title("IMAC Decision Watershed")
-    root.geometry("560x158")
+    root.geometry("560x198")
     root.resizable(False, False)
     root.configure(bg="#eef4f8")
 
@@ -160,12 +167,44 @@ def _show_search_window(host: str, port: int) -> None:
     entry = tk.Entry(row, textvariable=query_var, font=("Segoe UI", 11), relief="solid", bd=1)
     entry.pack(side="left", fill="x", expand=True, ipady=8)
 
+    settings_row = tk.Frame(container, bg="#eef4f8")
+    settings_row.pack(fill="x", pady=(10, 0))
+
+    model_label = tk.Label(
+        settings_row,
+        text="Reranker",
+        bg="#eef4f8",
+        fg="#657084",
+        font=("Segoe UI", 9, "bold"),
+    )
+    model_label.pack(side="left")
+
+    model_choices = {"Default": "default", "Stronger": "strong"}
+    model_var = tk.StringVar(value="Default")
+    model_select = ttk.Combobox(
+        settings_row,
+        textvariable=model_var,
+        values=tuple(model_choices.keys()),
+        state="readonly",
+        width=14,
+    )
+    model_select.pack(side="left", padx=(8, 0))
+
+    model_hint = tk.Label(
+        settings_row,
+        text="Default is faster; Stronger may take longer the first time.",
+        bg="#eef4f8",
+        fg="#657084",
+        font=("Segoe UI", 9),
+    )
+    model_hint.pack(side="left", padx=(10, 0))
+
     def open_search() -> None:
         query = query_var.get().strip()
         if not query:
             entry.focus_set()
             return
-        webbrowser.open(_app_url(host, port, query))
+        webbrowser.open(_app_url(host, port, query, model_choices[model_var.get()]))
         status.config(text=f"Opened results at 127.0.0.1:{port}")
 
     button = tk.Button(
