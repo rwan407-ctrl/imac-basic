@@ -6,7 +6,8 @@ The tool uses the bundled HTML files in `static\handbook` as the source of truth
 
 The frontend also serves the styled handbook export from `static\handbook`. Search results include:
 
-- One highlighted result at a time, ranked by hybrid retrieval and reranking, with a `Next match` button for moving through the top ranked matches.
+- One highlighted result at a time, ranked by hybrid retrieval and reranking, with previous/next controls and a compact rank list for moving through the top ranked matches.
+- Placeholder thumbs-up/thumbs-down buttons for future relevance feedback workflows.
 - A compact score icon that reveals the retrieval score breakdown on hover/focus.
 - A full local handbook page positioned at the retrieved section, with a yellow section outline and highlighted query terms.
 - `Open local HTML`: opens the styled local chapter/section in a new tab.

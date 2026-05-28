@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>IMAC Handbook Search</title>
-    <link rel="stylesheet" href="/styles.css?v=ranked-match-1" />
+    <link rel="stylesheet" href="/styles.css?v=ranked-match-2" />
   </head>
   <body>
     <header class="topbar">
@@ -44,7 +44,8 @@
           </div>
           <div class="chapter-viewer-actions">
             <span id="chapter-viewer-score"></span>
-            <button id="chapter-viewer-next" class="next-result" type="button">Next match</button>
+            <div id="chapter-viewer-nav" class="rank-nav" aria-label="Ranked matches"></div>
+            <div id="chapter-viewer-feedback" class="feedback-controls" aria-label="Result feedback"></div>
             <a id="chapter-viewer-open" href="#" target="_blank" rel="noreferrer">Open highlighted page</a>
           </div>
         </div>
@@ -52,6 +53,6 @@
       </section>
     </main>
 
-    <script src="/app.js?v=ranked-match-1"></script>
+    <script src="/app.js?v=ranked-match-2"></script>
   </body>
 </html>

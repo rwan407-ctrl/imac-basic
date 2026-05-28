@@ -197,6 +197,7 @@ button:hover {
   align-items: center;
   justify-content: flex-end;
   gap: 10px;
+  flex-wrap: wrap;
 }
 
 .result {
@@ -377,15 +378,110 @@ button:hover {
   color: #d9e5de;
 }
 
-.next-result {
+.rank-nav {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.rank-buttons {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.pager-button,
+.rank-button {
   min-height: 34px;
-  padding: 0 12px;
+  border: 1px solid var(--line);
+  background: var(--panel);
+  color: var(--accent-dark);
   font-size: 13px;
 }
 
-.next-result:disabled {
+.pager-button {
+  padding: 0 12px;
+}
+
+.rank-button {
+  display: inline-grid;
+  place-items: center;
+  width: 34px;
+  padding: 0;
+  border-radius: 50%;
+  font-weight: 800;
+}
+
+.rank-button.active {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: white;
+}
+
+.pager-button:hover,
+.rank-button:hover {
+  border-color: var(--accent);
+  background: #e9f3f0;
+  color: var(--accent-dark);
+}
+
+.rank-button.active:hover {
+  background: var(--accent-dark);
+  color: white;
+}
+
+.match-position {
+  min-width: 34px;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 800;
+  text-align: center;
+}
+
+.pager-button:disabled {
   cursor: not-allowed;
   opacity: 0.48;
+}
+
+.feedback-controls {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.feedback-button {
+  display: inline-grid;
+  place-items: center;
+  width: 34px;
+  min-height: 34px;
+  height: 34px;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  padding: 0;
+  background: var(--panel);
+  color: var(--muted);
+}
+
+.feedback-button svg {
+  width: 17px;
+  height: 17px;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.8;
+}
+
+.feedback-button:hover {
+  border-color: var(--accent);
+  background: #e9f3f0;
+  color: var(--accent-dark);
+}
+
+.feedback-button.active {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: white;
 }
 
 .empty {
@@ -433,6 +529,7 @@ button:hover {
   align-items: center;
   justify-content: flex-end;
   gap: 10px;
+  flex-wrap: wrap;
 }
 
 #chapter-viewer-score {
@@ -475,7 +572,7 @@ button:hover {
   }
 
   .candidate-actions {
-    justify-content: space-between;
+    justify-content: flex-start;
   }
 
   .score-popover {
@@ -488,8 +585,15 @@ button:hover {
   }
 
   .chapter-viewer-actions {
-    flex-wrap: wrap;
     justify-content: flex-start;
+  }
+
+  .rank-nav {
+    flex-wrap: wrap;
+  }
+
+  .pager-button {
+    flex: 1 1 auto;
   }
 
   #chapter-frame {

@@ -11,12 +11,14 @@ const chapterViewerTitle = document.querySelector("#chapter-viewer-title");
 const chapterViewerSection = document.querySelector("#chapter-viewer-section");
 const chapterViewerOpen = document.querySelector("#chapter-viewer-open");
 const chapterViewerScore = document.querySelector("#chapter-viewer-score");
-const chapterViewerNext = document.querySelector("#chapter-viewer-next");
+const chapterViewerNav = document.querySelector("#chapter-viewer-nav");
+const chapterViewerFeedback = document.querySelector("#chapter-viewer-feedback");
 const chapterFrame = document.querySelector("#chapter-frame");
 
 const SEARCH_POOL_SIZE = 5;
 let currentData = null;
 let activeResultIndex = 0;
+const feedbackByChunk = new Map();
 
 function escapeHtml(value) {
   return String(value)
@@ -69,11 +71,59 @@ function scoreInfo(result, index, total) {
     <span class="score-hover">
       <button class="score-symbol ${escapeHtml(result.confidence_label)}" type="button" aria-label="Score details">i</button>
       <span class="score-popover" role="tooltip">
-        <span class="score-title">Rank ${index + 1} of ${total}</span>
+        <span class="score-title">${index + 1}/${total}</span>
         <span class="score-note">Retrieval confidence, not medical truth.</span>
         <span class="score-grid">${rows}</span>
       </span>
     </span>
+  `;
+}
+
+function feedbackButton(kind, currentValue) {
+  const isActive = currentValue === kind;
+  const label = kind === "up" ? "Mark useful" : "Mark not useful";
+  const icon =
+    kind === "up"
+      ? `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3m0 11V10l5-8a3 3 0 0 1 3 3v4h5a2 2 0 0 1 2 2l-1 7a4 4 0 0 1-4 4H7Z"></path></svg>`
+      : `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M17 2h3a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2h-3m0-11v12l-5 8a3 3 0 0 1-3-3v-4H4a2 2 0 0 1-2-2l1-7a4 4 0 0 1 4-4h10Z"></path></svg>`;
+  return `
+    <button
+      class="feedback-button ${isActive ? "active" : ""}"
+      type="button"
+      data-feedback="${kind}"
+      aria-label="${label}"
+      title="${label} placeholder"
+      aria-pressed="${isActive ? "true" : "false"}"
+    >${icon}</button>
+  `;
+}
+
+function feedbackControls(result) {
+  const currentValue = feedbackByChunk.get(result.chunk_id) || "";
+  return `${feedbackButton("up", currentValue)}${feedbackButton("down", currentValue)}`;
+}
+
+function rankNavigation(total) {
+  const previousDisabled = total <= 1;
+  const nextDisabled = total <= 1;
+  const rankButtons = Array.from({ length: total }, (_, index) => {
+    const active = index === activeResultIndex;
+    return `
+      <button
+        class="rank-button ${active ? "active" : ""}"
+        type="button"
+        data-rank-index="${index}"
+        aria-label="Show match ${index + 1} of ${total}"
+        aria-current="${active ? "true" : "false"}"
+      >${index + 1}</button>
+    `;
+  }).join("");
+
+  return `
+    <button class="pager-button" type="button" data-action="previous-result" ${previousDisabled ? "disabled" : ""}>Previous</button>
+    <span class="rank-buttons">${rankButtons}</span>
+    <span class="match-position">${activeResultIndex + 1}/${total}</span>
+    <button class="pager-button" type="button" data-action="next-result" ${nextDisabled ? "disabled" : ""}>Next</button>
   `;
 }
 
@@ -114,16 +164,16 @@ function renderActiveResult() {
 
   const total = currentData.results.length;
   const result = currentData.results[activeResultIndex];
-  const nextLabel = total > 1 ? `Next match (${(activeResultIndex + 1) % total + 1}/${total})` : "Next match";
   resultsEl.innerHTML = `
     <div class="candidate-strip ${escapeHtml(result.confidence_label)}">
       <div>
-        <strong>Rank ${activeResultIndex + 1} of ${total}</strong>
+        <strong>${activeResultIndex + 1}/${total}</strong>
         <span>${escapeHtml(result.chunk_id)}</span>
       </div>
       <div class="candidate-actions">
         ${badge(result.confidence_label, result.confidence)}
-        <button class="next-result" type="button" data-action="next-result" ${total <= 1 ? "disabled" : ""}>${escapeHtml(nextLabel)}</button>
+        <div class="rank-nav" aria-label="Ranked matches">${rankNavigation(total)}</div>
+        <div class="feedback-controls" aria-label="Result feedback">${feedbackControls(result)}</div>
       </div>
     </div>
     <article class="result best-result ${escapeHtml(result.confidence_label)}">
@@ -148,14 +198,9 @@ function renderActiveResult() {
   chapterViewerSection.textContent = result.section;
   chapterViewerOpen.href = result.highlighted_html_url;
   chapterViewerScore.innerHTML = `${badge(result.confidence_label, result.confidence)} ${scoreInfo(result, activeResultIndex, total)}`;
-  chapterViewerNext.textContent = nextLabel;
-  chapterViewerNext.disabled = total <= 1;
+  chapterViewerNav.innerHTML = rankNavigation(total);
+  chapterViewerFeedback.innerHTML = feedbackControls(result);
   chapterFrame.src = result.highlighted_html_url;
-
-  const nextButton = resultsEl.querySelector("[data-action='next-result']");
-  if (nextButton) {
-    nextButton.addEventListener("click", showNextResult);
-  }
 }
 
 function showNextResult() {
@@ -164,7 +209,48 @@ function showNextResult() {
   renderActiveResult();
 }
 
-chapterViewerNext.addEventListener("click", showNextResult);
+function showPreviousResult() {
+  if (!currentData || currentData.results.length <= 1) return;
+  activeResultIndex = (activeResultIndex - 1 + currentData.results.length) % currentData.results.length;
+  renderActiveResult();
+}
+
+function showRank(index) {
+  if (!currentData || index < 0 || index >= currentData.results.length) return;
+  activeResultIndex = index;
+  renderActiveResult();
+}
+
+function handleResultControls(event) {
+  const target = event.target.closest("button");
+  if (!target || !currentData || !currentData.results.length) return;
+
+  if (target.dataset.action === "next-result") {
+    showNextResult();
+    return;
+  }
+  if (target.dataset.action === "previous-result") {
+    showPreviousResult();
+    return;
+  }
+  if (target.dataset.rankIndex !== undefined) {
+    showRank(Number(target.dataset.rankIndex));
+    return;
+  }
+  if (target.dataset.feedback) {
+    const result = currentData.results[activeResultIndex];
+    const currentValue = feedbackByChunk.get(result.chunk_id);
+    if (currentValue === target.dataset.feedback) {
+      feedbackByChunk.delete(result.chunk_id);
+    } else {
+      feedbackByChunk.set(result.chunk_id, target.dataset.feedback);
+    }
+    renderActiveResult();
+  }
+}
+
+resultsEl.addEventListener("click", handleResultControls);
+chapterViewer.addEventListener("click", handleResultControls);
 
 form.addEventListener("submit", async (event) => {
   event.preventDefault();
