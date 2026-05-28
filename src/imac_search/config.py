@@ -15,6 +15,7 @@ def _project_root() -> Path:
 
 PROJECT_ROOT = _project_root()
 DEFAULT_SOURCE_DIR = PROJECT_ROOT / "static" / "handbook"
+DEFAULT_RERANKER_KEY = os.getenv("IMAC_DEFAULT_RERANKER", "jina")
 DEFAULT_RERANKER_MODEL = os.getenv(
     "IMAC_RERANKER_MODEL", "cross-encoder/ms-marco-MiniLM-L-6-v2"
 )
@@ -65,6 +66,7 @@ class Settings:
     reranker_model: str = os.getenv(
         "IMAC_RERANKER_MODEL", DEFAULT_RERANKER_MODEL
     )
+    default_reranker_key: str = DEFAULT_RERANKER_KEY
     chunk_words: int = int(os.getenv("IMAC_CHUNK_WORDS", "260"))
     chunk_overlap: int = int(os.getenv("IMAC_CHUNK_OVERLAP", "45"))
     min_chunk_words: int = int(os.getenv("IMAC_MIN_CHUNK_WORDS", "12"))

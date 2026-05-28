@@ -41,9 +41,9 @@ To try the "Decision Watershed" desktop-style entry point:
 python scripts\desktop_entry.py
 ```
 
-This opens a small local search bar. The browser does not open until you click `Search`. The launcher first prepares the retrieval request locally, so a first-time `Stronger` reranker load stays inside the search window; once the model and results are ready, it opens directly into highlighted handbook evidence for that query. If the local service is already running on port `8765`, the search bar reuses it. The desktop launcher also includes a `Tests` dropdown with built-in smoke-test questions plus locally saved questions. Desktop saved questions are stored in `config\test_questions.local.json`, which is ignored by Git.
+This opens a small local search bar. The browser does not open until you click `Search`. The launcher first prepares the retrieval request locally, so a first-time `Strongest (Jina)` reranker load stays inside the search window; once the model and results are ready, it opens directly into highlighted handbook evidence for that query. If the local service is already running on port `8765`, the search bar reuses it. The desktop launcher also includes a `Tests` dropdown with built-in smoke-test questions plus locally saved questions. Desktop saved questions are stored in `config\test_questions.local.json`, which is ignored by Git.
 
-The search bar and web launcher both expose a `Reranker` setting. `Default` keeps the current fast local reranker; `Stronger` uses a larger local cross-encoder; `Strongest (Jina)` uses `jinaai/jina-reranker-v2-base-multilingual` with local `sentence-transformers` execution. Stronger models may take longer the first time they are selected because the model has to be downloaded and loaded. The Jina model card lists a CC-BY-NC-4.0 license, so review licensing before commercial deployment.
+The search bar and web launcher default to `Strongest (Jina)`, which uses `jinaai/jina-reranker-v2-base-multilingual` with local `sentence-transformers` execution. Users must open `Settings` to downgrade to `Stronger` or `Default` for speed. Stronger models may take longer the first time they are selected because the model has to be downloaded and loaded. The Jina model card lists a CC-BY-NC-4.0 license, so review licensing before commercial deployment.
 
 To start only the local service in the background without showing the search bar:
 
@@ -98,11 +98,11 @@ Search body:
   "query": "MMR contraindications during pregnancy",
   "top_k": 5,
   "rerank": true,
-  "reranker_model": "default"
+  "reranker_model": "jina"
 }
 ```
 
-Available reranker values are `default`, `strong`, and `jina`.
+Available reranker values are `jina`, `strong`, and `default`. If omitted, the backend uses `jina`.
 
 Confidence is retrieval confidence only. It is not a measure of clinical correctness.
 

@@ -69,6 +69,7 @@ class SearchEngine:
             "source_dir": self.metadata.get("source_dir", str(settings.source_dir)),
             "embedding_model": settings.embedding_model,
             "reranker_model": settings.reranker_model,
+            "default_reranker_model": self._default_reranker_key(),
             "reranker_models": [
                 {"key": key, **preset}
                 for key, preset in RERANKER_MODEL_PRESETS.items()
@@ -79,8 +80,13 @@ class SearchEngine:
             "metadata": self.metadata,
         }
 
+    def _default_reranker_key(self) -> str:
+        if settings.default_reranker_key in RERANKER_MODEL_PRESETS:
+            return settings.default_reranker_key
+        return "jina"
+
     def _resolve_reranker_model(self, model_key: str | None) -> tuple[str, str]:
-        key = model_key if model_key in RERANKER_MODEL_PRESETS else "default"
+        key = model_key if model_key in RERANKER_MODEL_PRESETS else self._default_reranker_key()
         return key, RERANKER_MODEL_PRESETS[key]["model"]
 
     def _cross_encoder_kwargs(self, cross_encoder_cls: Any, model_key: str) -> dict[str, Any]:

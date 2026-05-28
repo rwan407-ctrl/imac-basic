@@ -44,6 +44,11 @@ class RerankerPresetTests(unittest.TestCase):
         self.assertEqual(RERANKER_MODEL_PRESETS["jina"]["label"], "Strongest (Jina)")
         self.assertTrue(RERANKER_MODEL_PRESETS["jina"]["cross_encoder_kwargs"]["trust_remote_code"])
 
+    def test_jina_is_default_when_model_key_is_omitted(self):
+        key, _model = self.engine._resolve_reranker_model(None)
+
+        self.assertEqual(key, "jina")
+
     def test_jina_kwargs_support_modern_sentence_transformers(self):
         kwargs = self.engine._cross_encoder_kwargs(ModernCrossEncoder, "jina")
 

@@ -12,6 +12,13 @@ import desktop_entry
 
 
 class DesktopEntryTestQuestionTests(unittest.TestCase):
+    def test_desktop_defaults_to_strongest_reranker(self):
+        self.assertEqual(desktop_entry.DEFAULT_RERANKER_LABEL, "Strongest (Jina)")
+        self.assertEqual(
+            desktop_entry.RERANKER_CHOICES[desktop_entry.DEFAULT_RERANKER_LABEL],
+            "jina",
+        )
+
     def test_save_load_test_bank(self):
         with tempfile.TemporaryDirectory() as tmp:
             path = Path(tmp) / "test_questions.local.json"

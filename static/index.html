@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>IMAC Handbook Search</title>
-    <link rel="stylesheet" href="/styles.css?v=test-questions-1" />
+    <link rel="stylesheet" href="/styles.css?v=strongest-default-1" />
   </head>
   <body>
     <header class="topbar">
@@ -43,17 +43,17 @@
           <div class="controls">
             <input id="top-k" type="hidden" value="5" />
             <span class="mode-note">Showing one handbook page at a time from the top ranked matches</span>
-            <label class="check">
-              <input id="rerank" type="checkbox" checked />
-              Rerank
-            </label>
             <details class="settings-menu">
               <summary>Settings</summary>
+              <label class="check">
+                <input id="rerank" type="checkbox" checked />
+                Rerank
+              </label>
               <label for="reranker-model">Reranker</label>
               <select id="reranker-model" name="reranker-model">
-                <option value="default" selected>Default</option>
+                <option value="jina" selected>Strongest (Jina)</option>
                 <option value="strong">Stronger</option>
-                <option value="jina">Strongest (Jina)</option>
+                <option value="default">Default</option>
               </select>
             </details>
             <details class="test-menu" id="test-menu">
@@ -104,6 +104,6 @@
       </section>
     </main>
 
-    <script src="/app.js?v=test-questions-1"></script>
+    <script src="/app.js?v=strongest-default-1"></script>
   </body>
 </html>

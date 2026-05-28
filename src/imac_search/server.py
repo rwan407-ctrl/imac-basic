@@ -74,7 +74,7 @@ class Handler(BaseHTTPRequestHandler):
                 str(payload.get("query", "")),
                 top_k=int(payload.get("top_k", 8)),
                 rerank=bool(payload.get("rerank", True)),
-                reranker_model=str(payload.get("reranker_model", "default")),
+                reranker_model=str(payload.get("reranker_model", settings.default_reranker_key)),
             )
             self._send_json(response)
         except Exception as exc:

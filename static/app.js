@@ -409,9 +409,16 @@ async function loadStats() {
     statusEl.dataset.state = "ready";
     statsEl.textContent = `${data.chunk_count} chunks across ${data.chapter_count} chapters`;
     if (data.reranker_models && rerankerModelInput) {
-      rerankerModelInput.innerHTML = data.reranker_models
+      const defaultReranker = data.default_reranker_model || "jina";
+      const modelOrder = ["jina", "strong", "default"];
+      const orderedModels = [...data.reranker_models].sort((a, b) => {
+        if (a.key === defaultReranker) return -1;
+        if (b.key === defaultReranker) return 1;
+        return modelOrder.indexOf(a.key) - modelOrder.indexOf(b.key);
+      });
+      rerankerModelInput.innerHTML = orderedModels
         .map((item) => {
-          const selected = item.key === "default" ? "selected" : "";
+          const selected = item.key === defaultReranker ? "selected" : "";
           return `<option value="${escapeHtml(item.key)}" ${selected}>${escapeHtml(item.label)}</option>`;
         })
         .join("");
@@ -563,7 +570,7 @@ async function performSearch(query) {
         query,
         top_k: Number(topKInput.value || SEARCH_POOL_SIZE),
         rerank: rerankInput.checked,
-        reranker_model: rerankerModelInput.value || "default",
+        reranker_model: rerankerModelInput.value || "jina",
       }),
     });
     renderResults(data);

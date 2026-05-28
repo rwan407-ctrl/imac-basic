@@ -482,7 +482,7 @@ button:hover {
 }
 
 .settings-menu[open] {
-  min-width: 166px;
+  min-width: 190px;
 }
 
 .test-menu[open] {
@@ -499,6 +499,10 @@ button:hover {
 .test-menu label {
   margin-bottom: 5px;
   font-size: 12px;
+}
+
+.settings-menu .check {
+  margin-bottom: 10px;
 }
 
 .settings-menu select,

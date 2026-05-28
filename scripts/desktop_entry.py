@@ -32,6 +32,14 @@ DEFAULT_TEST_QUESTIONS = [
     {"id": "builtin-six-week-schedule", "question": "6-week immunisation schedule"},
     {"id": "builtin-rotavirus-age-limits", "question": "rotavirus vaccine age limits"},
 ]
+DEFAULT_RERANKER_LABEL = "Strongest (Jina)"
+RERANKER_CHOICES = {
+    "Strongest (Jina)": "jina",
+    "Stronger": "strong",
+    "Default": "default",
+}
+BASE_WINDOW_GEOMETRY = "760x270"
+SETTINGS_WINDOW_GEOMETRY = "760x310"
 
 
 def _normalize_question(value: str) -> str:
@@ -173,7 +181,7 @@ def _app_url(
     host: str,
     port: int,
     query: str | None = None,
-    reranker_model: str = "default",
+    reranker_model: str = "jina",
 ) -> str:
     params = {"version": "decision-watershed"}
     if query:
@@ -286,7 +294,7 @@ def _show_search_window(host: str, port: int) -> None:
 
     root = tk.Tk()
     root.title("IMAC Decision Watershed")
-    root.geometry("760x292")
+    root.geometry(BASE_WINDOW_GEOMETRY)
     root.resizable(False, False)
     root.configure(bg="#eef4f8")
 
@@ -332,12 +340,8 @@ def _show_search_window(host: str, port: int) -> None:
     )
     model_label.pack(side="left")
 
-    model_choices = {
-        "Default": "default",
-        "Stronger": "strong",
-        "Strongest (Jina)": "jina",
-    }
-    model_var = tk.StringVar(value="Default")
+    model_choices = RERANKER_CHOICES
+    model_var = tk.StringVar(value=DEFAULT_RERANKER_LABEL)
     model_select = ttk.Combobox(
         settings_row,
         textvariable=model_var,
@@ -349,12 +353,13 @@ def _show_search_window(host: str, port: int) -> None:
 
     model_hint = tk.Label(
         settings_row,
-        text="Default is faster; stronger models may take longer the first time.",
+        text="Only change this if you want to downgrade for speed.",
         bg="#eef4f8",
         fg="#657084",
         font=("Segoe UI", 9),
     )
     model_hint.pack(side="left", padx=(10, 0))
+    settings_row.pack_forget()
 
     test_bank = _load_test_bank()
     test_display_map: dict[str, dict] = {}
@@ -454,6 +459,7 @@ def _show_search_window(host: str, port: int) -> None:
     def set_busy(is_busy: bool) -> None:
         entry.config(state="disabled" if is_busy else "normal")
         button.config(state="disabled" if is_busy else "normal")
+        settings_button.config(state="disabled" if is_busy else "normal")
         model_select.config(state="disabled" if is_busy else "readonly")
         test_select.config(state="disabled" if is_busy else "readonly")
         run_test_button.config(state="disabled" if is_busy else "normal")
@@ -463,6 +469,16 @@ def _show_search_window(host: str, port: int) -> None:
 
     def set_status(message: str) -> None:
         status.config(text=message)
+
+    def toggle_settings() -> None:
+        if settings_row.winfo_ismapped():
+            settings_row.pack_forget()
+            settings_button.config(text="Settings")
+            root.geometry(BASE_WINDOW_GEOMETRY)
+        else:
+            settings_row.pack(fill="x", pady=(10, 0), before=test_row)
+            settings_button.config(text="Hide settings")
+            root.geometry(SETTINGS_WINDOW_GEOMETRY)
 
     def selected_test_question() -> dict | None:
         return test_display_map.get(test_var.get())
@@ -598,7 +614,23 @@ def _show_search_window(host: str, port: int) -> None:
     )
     button.pack(side="left", padx=(10, 0))
 
+    settings_button = tk.Button(
+        row,
+        text="Settings",
+        bg="#ffffff",
+        fg="#0d5e57",
+        activebackground="#edf7f5",
+        activeforeground="#0d5e57",
+        relief="solid",
+        bd=1,
+        padx=12,
+        pady=9,
+        font=("Segoe UI", 10, "bold"),
+    )
+    settings_button.pack(side="left", padx=(8, 0))
+
     test_select.bind("<<ComboboxSelected>>", lambda _event: load_selected_test_question())
+    settings_button.config(command=toggle_settings)
     run_test_button.config(command=run_selected_test_question)
     save_test_button.config(command=save_current_test_question)
     pin_test_button.config(command=toggle_selected_test_pin)
