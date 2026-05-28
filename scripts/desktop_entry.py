@@ -206,7 +206,7 @@ def _show_search_window(host: str, port: int) -> None:
     )
     model_label.pack(side="left")
 
-    model_choices = {"Default": "default", "Stronger": "strong"}
+    model_choices = {"Default": "default", "Stronger": "strong", "Azure/API": "azure_foundry"}
     model_var = tk.StringVar(value="Default")
     model_select = ttk.Combobox(
         settings_row,
@@ -219,7 +219,7 @@ def _show_search_window(host: str, port: int) -> None:
 
     model_hint = tk.Label(
         settings_row,
-        text="Default is faster; Stronger may take longer the first time.",
+        text="Default is faster; Azure/API needs local API settings.",
         bg="#eef4f8",
         fg="#657084",
         font=("Segoe UI", 9),
@@ -244,6 +244,8 @@ def _show_search_window(host: str, port: int) -> None:
         loading_text = (
             "Loading Stronger reranker, then opening results..."
             if selected_model == "strong"
+            else "Calling Azure/API reranker, then opening results..."
+            if selected_model == "azure_foundry"
             else "Searching, then opening results..."
         )
         set_busy(True)

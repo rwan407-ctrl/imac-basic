@@ -168,7 +168,8 @@ async function loadStats() {
       rerankerModelInput.innerHTML = data.reranker_models
         .map((item) => {
           const selected = item.key === "default" ? "selected" : "";
-          return `<option value="${escapeHtml(item.key)}" ${selected}>${escapeHtml(item.label)}</option>`;
+          const suffix = item.configured === false ? " (needs local API settings)" : "";
+          return `<option value="${escapeHtml(item.key)}" ${selected}>${escapeHtml(item.label + suffix)}</option>`;
         })
         .join("");
     }

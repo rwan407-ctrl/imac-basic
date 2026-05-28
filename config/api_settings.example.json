@@ -1,0 +1,7 @@
+{
+  "azure_foundry_endpoint": "https://<resource-name>.services.ai.azure.com/models",
+  "azure_foundry_api_key": "",
+  "azure_foundry_bearer_token": "",
+  "azure_foundry_model": "<deployment-or-model-name>",
+  "azure_foundry_api_version": "2024-05-01-preview"
+}

@@ -4,6 +4,7 @@ __pycache__/
 .pytest_cache/
 server*.log
 imac_search_*.png
+config/api_settings.local.json
 data/index/*.jsonl
 data/index/*.json
 data/index/*.npy

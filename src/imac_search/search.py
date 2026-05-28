@@ -9,6 +9,7 @@ from urllib.parse import quote
 
 import numpy as np
 
+from .api_reranker import AzureFoundryReranker
 from .bm25 import BM25Index
 from .confidence import apply_confidence, label_for
 from .config import settings
@@ -83,9 +84,31 @@ class SearchEngine:
         if key in self._rerankers:
             return key, model_name, self._rerankers[key]
         try:
-            from sentence_transformers import CrossEncoder
+            provider = RERANKER_MODEL_PRESETS[key].get("provider", "local_cross_encoder")
+            if provider == "azure_foundry":
+                if not (
+                    settings.azure_foundry_endpoint
+                    and settings.azure_foundry_model
+                    and (settings.azure_foundry_api_key or settings.azure_foundry_bearer_token)
+                ):
+                    raise RuntimeError(
+                        "Azure/API reranker is not configured. Set IMAC_AZURE_FOUNDRY_ENDPOINT, "
+                        "IMAC_AZURE_FOUNDRY_MODEL, and IMAC_AZURE_FOUNDRY_API_KEY, or create "
+                        "config/api_settings.local.json from config/api_settings.example.json."
+                    )
+                self._rerankers[key] = AzureFoundryReranker(
+                    endpoint=settings.azure_foundry_endpoint,
+                    api_key=settings.azure_foundry_api_key,
+                    bearer_token=settings.azure_foundry_bearer_token,
+                    model=settings.azure_foundry_model,
+                    api_version=settings.azure_foundry_api_version,
+                    timeout=settings.azure_foundry_timeout,
+                    candidate_chars=settings.azure_foundry_candidate_chars,
+                )
+            else:
+                from sentence_transformers import CrossEncoder
 
-            self._rerankers[key] = CrossEncoder(model_name)
+                self._rerankers[key] = CrossEncoder(model_name)
             self.reranker_errors.pop(key, None)
             return key, model_name, self._rerankers[key]
         except Exception as exc:
@@ -150,14 +173,28 @@ class SearchEngine:
         if rerank and results:
             reranker_key, reranker_model_name, reranker = self._get_reranker(reranker_key)
             if reranker is not None:
-                pairs = [[query, result.chunk.text] for result in results]
-                raw_scores = reranker.predict(pairs, show_progress_bar=False)
-                for result, raw in zip(results, raw_scores):
-                    raw_value = float(raw)
-                    result.reranker_score = raw_value
-                    result.reranker_norm = _sigmoid(raw_value)
-                    result.final_score = 0.80 * result.reranker_norm + 0.20 * result.rrf_score
-                results.sort(key=lambda item: item.final_score, reverse=True)
+                try:
+                    provider = RERANKER_MODEL_PRESETS[reranker_key].get("provider", "local_cross_encoder")
+                    if provider == "azure_foundry":
+                        raw_scores = reranker.predict(query, [result.chunk.text for result in results])
+                        for result, raw in zip(results, raw_scores):
+                            raw_value = float(raw)
+                            result.reranker_score = raw_value
+                            result.reranker_norm = max(0.0, min(1.0, raw_value))
+                            result.final_score = 0.80 * result.reranker_norm + 0.20 * result.rrf_score
+                    else:
+                        pairs = [[query, result.chunk.text] for result in results]
+                        raw_scores = reranker.predict(pairs, show_progress_bar=False)
+                        for result, raw in zip(results, raw_scores):
+                            raw_value = float(raw)
+                            result.reranker_score = raw_value
+                            result.reranker_norm = _sigmoid(raw_value)
+                            result.final_score = 0.80 * result.reranker_norm + 0.20 * result.rrf_score
+                    results.sort(key=lambda item: item.final_score, reverse=True)
+                except Exception as exc:
+                    self.reranker_errors[reranker_key] = str(exc)
+                    warnings.append(f"{reranker_key} reranker failed; used RRF ranking. {exc}")
+                    rerank = False
             else:
                 warnings.append(
                     f"{reranker_key} reranker unavailable; used RRF ranking. "

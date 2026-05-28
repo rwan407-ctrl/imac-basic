@@ -42,7 +42,7 @@ python scripts\desktop_entry.py
 
 This opens a small local search bar. The browser does not open until you click `Search`. The launcher first prepares the retrieval request locally, so a first-time `Stronger` reranker load stays inside the search window; once the model and results are ready, it opens directly into highlighted handbook evidence for that query. If the local service is already running on port `8765`, the search bar reuses it.
 
-The search bar and web launcher both expose a `Reranker` setting. `Default` keeps the current fast local reranker; `Stronger` uses a larger local cross-encoder and may take longer the first time it is selected.
+The search bar and web launcher both expose a `Reranker` setting. `Default` keeps the current fast local reranker; `Stronger` uses a larger local cross-encoder and may take longer the first time it is selected. This experimental branch also includes `Azure/API`, which can call an Azure AI Foundry chat-completions deployment as a remote reranker.
 
 To start only the local service in the background without showing the search bar:
 
@@ -81,6 +81,23 @@ powershell -ExecutionPolicy Bypass -File scripts\build_decision_watershed_exe.ps
 ```
 
 The build script packages the current `static` and `data` folders, so run `python scripts\build_index.py` first.
+
+## Optional Azure/API Reranker
+
+This branch keeps local reranking as the default. The Azure/API option is only used when selected and configured. Do not commit real API keys.
+
+Configure it with environment variables:
+
+```powershell
+$env:IMAC_AZURE_FOUNDRY_ENDPOINT="https://<resource-name>.services.ai.azure.com/models"
+$env:IMAC_AZURE_FOUNDRY_MODEL="<deployment-or-model-name>"
+$env:IMAC_AZURE_FOUNDRY_API_KEY="<endpoint-key>"
+python scripts\desktop_entry.py
+```
+
+Or copy `config\api_settings.example.json` to `config\api_settings.local.json` and fill the local file. The local file is ignored by Git.
+
+The Azure/API reranker changes ranking only. It still does not generate a clinical answer.
 
 ## API
 
