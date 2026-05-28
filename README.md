@@ -41,7 +41,7 @@ To try the "Decision Watershed" desktop-style entry point:
 python scripts\desktop_entry.py
 ```
 
-This opens a small local search bar. The browser does not open until you click `Search`. The launcher first prepares the retrieval request locally, so a first-time `Stronger` reranker load stays inside the search window; once the model and results are ready, it opens directly into highlighted handbook evidence for that query. If the local service is already running on port `8765`, the search bar reuses it.
+This opens a small local search bar. The browser does not open until you click `Search`. The launcher first prepares the retrieval request locally, so a first-time `Stronger` reranker load stays inside the search window; once the model and results are ready, it opens directly into highlighted handbook evidence for that query. If the local service is already running on port `8765`, the search bar reuses it. The desktop launcher also includes a `Tests` dropdown with built-in smoke-test questions plus locally saved questions. Desktop saved questions are stored in `config\test_questions.local.json`, which is ignored by Git.
 
 The search bar and web launcher both expose a `Reranker` setting. `Default` keeps the current fast local reranker; `Stronger` uses a larger local cross-encoder; `Strongest (Jina)` uses `jinaai/jina-reranker-v2-base-multilingual` with local `sentence-transformers` execution. Stronger models may take longer the first time they are selected because the model has to be downloaded and loaded. The Jina model card lists a CC-BY-NC-4.0 license, so review licensing before commercial deployment.
 
