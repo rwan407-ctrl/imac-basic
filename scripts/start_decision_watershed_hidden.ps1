@@ -4,7 +4,7 @@ $ProjectRoot = Split-Path -Parent $PSScriptRoot
 
 Start-Process `
   -FilePath python `
-  -ArgumentList @("scripts\desktop_entry.py") `
+  -ArgumentList @("scripts\desktop_entry.py", "--no-ui") `
   -WorkingDirectory $ProjectRoot `
   -WindowStyle Hidden
 

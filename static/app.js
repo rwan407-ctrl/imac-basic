@@ -294,9 +294,7 @@ function handleResultControls(event) {
 resultsEl.addEventListener("click", handleResultControls);
 chapterViewer.addEventListener("click", handleResultControls);
 
-form.addEventListener("submit", async (event) => {
-  event.preventDefault();
-  const query = queryInput.value.trim();
+async function performSearch(query) {
   if (!query) return;
   document.body.classList.remove("reader-mode");
   form.dataset.state = "searching";
@@ -323,6 +321,11 @@ form.addEventListener("submit", async (event) => {
   } finally {
     delete form.dataset.state;
   }
+}
+
+form.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  await performSearch(queryInput.value.trim());
 });
 
 searchLauncher.addEventListener("click", () => expandSearch());
@@ -336,4 +339,14 @@ searchPanel.addEventListener("mouseenter", () => {
 searchPanel.addEventListener("mouseleave", collapseSearchIfIdle);
 searchPanel.addEventListener("focusout", collapseSearchIfIdle);
 
-loadStats();
+async function initialize() {
+  await loadStats();
+  const params = new URLSearchParams(window.location.search);
+  const urlQuery = params.get("q");
+  if (urlQuery) {
+    queryInput.value = urlQuery;
+    await performSearch(urlQuery.trim());
+  }
+}
+
+initialize();

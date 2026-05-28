@@ -40,9 +40,9 @@ To try the "Decision Watershed" desktop-style entry point:
 python scripts\desktop_entry.py
 ```
 
-This starts the local service without opening a browser automatically. Open the printed local URL only when you want to use it.
+This opens a small local search bar. The browser does not open until you click `Search`, then it opens directly into highlighted handbook evidence for that query. If the local service is already running on port `8765`, the search bar reuses it.
 
-To start it in the background without leaving a PowerShell window waiting:
+To start only the local service in the background without showing the search bar:
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File scripts\start_decision_watershed_hidden.ps1
@@ -64,6 +64,12 @@ If port `8765` is already occupied and you want the tool to choose another local
 
 ```powershell
 python scripts\desktop_entry.py --auto-port
+```
+
+To run only the service in the current terminal:
+
+```powershell
+python scripts\desktop_entry.py --no-ui
 ```
 
 To build a Windows executable:
