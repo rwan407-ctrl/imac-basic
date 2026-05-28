@@ -239,11 +239,12 @@ function handleResultControls(event) {
   }
   if (target.dataset.feedback) {
     const result = currentData.results[activeResultIndex];
+    const selectedKind = target.dataset.feedback;
     const currentValue = feedbackByChunk.get(result.chunk_id);
-    if (currentValue === target.dataset.feedback) {
+    if (currentValue === selectedKind) {
       feedbackByChunk.delete(result.chunk_id);
     } else {
-      feedbackByChunk.set(result.chunk_id, target.dataset.feedback);
+      feedbackByChunk.set(result.chunk_id, selectedKind);
     }
     renderActiveResult();
   }
