@@ -74,10 +74,10 @@ class RerankerPresetTests(unittest.TestCase):
         self.assertEqual(RERANKER_MODEL_PRESETS["azure_foundry"]["external"], "azure_foundry")
         self.assertEqual(RERANKER_MODEL_PRESETS["azure_foundry"]["score_transform"], "identity")
 
-    def test_stronger_is_default_when_model_key_is_omitted(self):
+    def test_jina_is_default_when_model_key_is_omitted(self):
         key, _model = self.engine._resolve_reranker_model(None)
 
-        self.assertEqual(key, "strong")
+        self.assertEqual(key, "jina")
 
     def test_jina_kwargs_support_modern_sentence_transformers(self):
         kwargs = self.engine._cross_encoder_kwargs(ModernCrossEncoder, "jina")

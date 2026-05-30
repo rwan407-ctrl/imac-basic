@@ -93,7 +93,7 @@ class SearchEngine:
     def _default_reranker_key(self) -> str:
         if settings.default_reranker_key in RERANKER_MODEL_PRESETS:
             return settings.default_reranker_key
-        return "strong"
+        return "jina"
 
     def _resolve_reranker_model(self, model_key: str | None) -> tuple[str, str]:
         key = model_key if model_key in RERANKER_MODEL_PRESETS else self._default_reranker_key()

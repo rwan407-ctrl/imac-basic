@@ -15,7 +15,7 @@ def _project_root() -> Path:
 
 PROJECT_ROOT = _project_root()
 DEFAULT_SOURCE_DIR = PROJECT_ROOT / "static" / "handbook"
-DEFAULT_RERANKER_KEY = os.getenv("IMAC_DEFAULT_RERANKER", "strong")
+DEFAULT_RERANKER_KEY = os.getenv("IMAC_DEFAULT_RERANKER", "jina")
 DEFAULT_RERANKER_MODEL = os.getenv(
     "IMAC_RERANKER_MODEL", "cross-encoder/ms-marco-MiniLM-L-6-v2"
 )

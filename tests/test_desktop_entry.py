@@ -12,11 +12,11 @@ import desktop_entry
 
 
 class DesktopEntryTestQuestionTests(unittest.TestCase):
-    def test_desktop_defaults_to_stronger_reranker(self):
-        self.assertEqual(desktop_entry.DEFAULT_RERANKER_LABEL, "Stronger")
+    def test_desktop_defaults_to_jina_reranker(self):
+        self.assertEqual(desktop_entry.DEFAULT_RERANKER_LABEL, "Strongest (Jina)")
         self.assertEqual(
             desktop_entry.RERANKER_CHOICES[desktop_entry.DEFAULT_RERANKER_LABEL],
-            "strong",
+            "jina",
         )
 
     def test_save_load_test_bank(self):

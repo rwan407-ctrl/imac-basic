@@ -34,10 +34,10 @@ DEFAULT_TEST_QUESTIONS = [
     {"id": "builtin-two-year-dtap-gap", "question": "2 year old, 4 month d-tap, 14 week gap, first valid?"},
     {"id": "builtin-azathioprine-mmr", "question": "4X year old women, Azathioprine, MMR"},
 ]
-DEFAULT_RERANKER_LABEL = "Stronger"
+DEFAULT_RERANKER_LABEL = "Strongest (Jina)"
 RERANKER_CHOICES = {
-    "Stronger": "strong",
     "Strongest (Jina)": "jina",
+    "Stronger": "strong",
     "Mixedbread Base v2": "mixedbread",
     "Qwen3 0.6B": "qwen3_06b",
     "BGE v2 M3": "bge_m3",
@@ -189,7 +189,7 @@ def _app_url(
     host: str,
     port: int,
     query: str | None = None,
-    reranker_model: str = "strong",
+    reranker_model: str = "jina",
     include_title_context: bool = True,
 ) -> str:
     params = {"version": "decision-watershed"}

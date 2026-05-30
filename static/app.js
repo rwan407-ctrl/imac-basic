@@ -477,10 +477,10 @@ async function loadStats() {
     statusEl.dataset.state = "ready";
     statsEl.textContent = `${data.chunk_count} chunks across ${data.chapter_count} chapters`;
     if (data.reranker_models && rerankerModelInput) {
-      const defaultReranker = data.default_reranker_model || "strong";
+      const defaultReranker = data.default_reranker_model || "jina";
       const modelOrder = [
-        "strong",
         "jina",
+        "strong",
         "mixedbread",
         "qwen3_06b",
         "bge_m3",
@@ -652,7 +652,7 @@ async function performSearch(query) {
         top_k: Number(topKInput.value || SEARCH_POOL_SIZE),
         rerank: rerankInput.checked,
         include_title_context: titleContextInput.checked,
-        reranker_model: rerankerModelInput.value || "strong",
+        reranker_model: rerankerModelInput.value || "jina",
         azure_foundry: azureFoundryPayload(),
       }),
     });
