@@ -3,9 +3,13 @@ from __future__ import annotations
 import json
 import math
 import inspect
+import threading
 import time
+import gc
 from pathlib import Path
 from typing import Any
+import urllib.error
+import urllib.request
 from urllib.parse import quote
 
 import numpy as np
@@ -43,6 +47,11 @@ def _bounded(value: float) -> float:
     return max(0.0, min(1.0, value))
 
 
+def _compact_error_body(body: bytes, limit: int = 420) -> str:
+    text = body.decode("utf-8", errors="replace").strip()
+    return text[:limit] + ("..." if len(text) > limit else "")
+
+
 class SearchEngine:
     def __init__(self, index_dir: Path | None = None):
         self.index_dir = index_dir or settings.index_dir
@@ -52,6 +61,7 @@ class SearchEngine:
         self.embedder = EmbeddingModel(settings.embedding_model)
         self.fragments = HtmlFragmentProvider(settings.source_dir)
         self._rerankers: dict[str, Any] = {}
+        self._reranker_lock = threading.Lock()
         self.reranker_errors: dict[str, str] = {}
         self.metadata = self._load_metadata()
 
@@ -83,11 +93,14 @@ class SearchEngine:
     def _default_reranker_key(self) -> str:
         if settings.default_reranker_key in RERANKER_MODEL_PRESETS:
             return settings.default_reranker_key
-        return "jina"
+        return "strong"
 
     def _resolve_reranker_model(self, model_key: str | None) -> tuple[str, str]:
         key = model_key if model_key in RERANKER_MODEL_PRESETS else self._default_reranker_key()
         return key, RERANKER_MODEL_PRESETS[key]["model"]
+
+    def _is_external_reranker(self, model_key: str) -> bool:
+        return RERANKER_MODEL_PRESETS[model_key].get("external") == "azure_foundry"
 
     def _cross_encoder_kwargs(self, cross_encoder_cls: Any, model_key: str) -> dict[str, Any]:
         kwargs = dict(RERANKER_MODEL_PRESETS[model_key].get("cross_encoder_kwargs", {}))
@@ -104,10 +117,162 @@ class SearchEngine:
             return _bounded(raw_value)
         return _sigmoid(raw_value)
 
+    def _azure_foundry_url(self, endpoint: str, request_format: str) -> str:
+        endpoint = endpoint.strip()
+        if not endpoint:
+            raise ValueError("Azure Foundry endpoint is required.")
+        lowered = endpoint.rstrip("/").lower()
+        if lowered.endswith("/rerank"):
+            return endpoint.rstrip("/")
+        if request_format == "cohere":
+            return endpoint.rstrip("/") + "/v2/rerank"
+        return endpoint.rstrip("/") + "/rerank"
+
+    def _azure_foundry_headers(self, api_key: str, auth_type: str) -> dict[str, str]:
+        api_key = api_key.strip()
+        if not api_key:
+            raise ValueError("Azure Foundry API key or token is required.")
+        headers = {"Content-Type": "application/json"}
+        auth_type = (auth_type or "bearer").strip().lower()
+        if auth_type == "api-key":
+            headers["api-key"] = api_key
+        elif auth_type == "x-api-key":
+            headers["x-api-key"] = api_key
+        else:
+            headers["Authorization"] = f"Bearer {api_key}"
+        return headers
+
+    def _azure_foundry_payload(
+        self,
+        query: str,
+        documents: list[str],
+        config: dict[str, Any],
+    ) -> tuple[str, bytes]:
+        request_format = str(config.get("request_format") or "tei").strip().lower()
+        if request_format not in {"tei", "cohere"}:
+            request_format = "tei"
+        endpoint = self._azure_foundry_url(str(config.get("endpoint") or ""), request_format)
+        if request_format == "cohere":
+            payload = {
+                "model": str(config.get("model") or "model"),
+                "query": query,
+                "documents": documents,
+                "top_n": len(documents),
+            }
+        else:
+            payload = {
+                "query": query,
+                "texts": documents,
+                "raw_scores": False,
+                "return_text": False,
+            }
+        return endpoint, json.dumps(payload, ensure_ascii=False).encode("utf-8")
+
+    def _parse_azure_foundry_scores(self, payload: Any, count: int) -> list[float]:
+        if count <= 0:
+            return []
+        scores = [0.0 for _ in range(count)]
+        seen = [False for _ in range(count)]
+        items = payload
+        if isinstance(payload, dict):
+            if isinstance(payload.get("results"), list):
+                items = payload["results"]
+            elif isinstance(payload.get("data"), list):
+                items = payload["data"]
+            elif isinstance(payload.get("rankings"), list):
+                items = payload["rankings"]
+            elif isinstance(payload.get("scores"), list):
+                items = payload["scores"]
+        if not isinstance(items, list):
+            raise ValueError("Azure Foundry response did not include a score list.")
+
+        for position, item in enumerate(items):
+            index = position
+            score = None
+            if isinstance(item, (int, float)):
+                score = float(item)
+            elif isinstance(item, dict):
+                raw_index = item.get("index", item.get("document_index", position))
+                try:
+                    index = int(raw_index)
+                except (TypeError, ValueError):
+                    index = position
+                for key in ("score", "relevance_score", "rerank_score", "rank_score"):
+                    if key in item:
+                        score = float(item[key])
+                        break
+            if score is None or index < 0 or index >= count:
+                continue
+            scores[index] = score
+            seen[index] = True
+
+        if not any(seen):
+            raise ValueError("Azure Foundry response did not contain usable scores.")
+        return scores
+
+    def _azure_foundry_scores(
+        self,
+        query: str,
+        documents: list[str],
+        config: dict[str, Any] | None,
+    ) -> list[float]:
+        config = config or {}
+        endpoint, body = self._azure_foundry_payload(query, documents, config)
+        headers = self._azure_foundry_headers(
+            str(config.get("api_key") or ""),
+            str(config.get("auth_type") or "bearer"),
+        )
+        timeout = max(5, min(180, int(config.get("timeout_seconds") or 90)))
+        request = urllib.request.Request(endpoint, data=body, headers=headers, method="POST")
+        try:
+            with urllib.request.urlopen(request, timeout=timeout) as response:
+                response_payload = json.loads(response.read().decode("utf-8"))
+        except urllib.error.HTTPError as exc:
+            detail = _compact_error_body(exc.read())
+            raise RuntimeError(f"Azure Foundry request failed: HTTP {exc.code}. {detail}") from exc
+        except urllib.error.URLError as exc:
+            raise RuntimeError(f"Azure Foundry request failed: {exc.reason}") from exc
+        return self._parse_azure_foundry_scores(response_payload, len(documents))
+
+    def _clear_rerankers(self) -> None:
+        self._rerankers.clear()
+        self._release_temporary_model_memory()
+
+    def _release_temporary_model_memory(self) -> None:
+        gc.collect()
+        try:
+            import torch
+
+            if torch.cuda.is_available():
+                torch.cuda.empty_cache()
+        except Exception:
+            pass
+
+    def _reranker_document(self, result: SearchResult, include_title_context: bool = True) -> str:
+        chunk = result.chunk
+        if not include_title_context:
+            return chunk.text
+        parent_path = " > ".join(chunk.section_path[:-1])
+        lines = []
+        if chunk.section_label:
+            heading_kind = "Table heading" if chunk.section_label.lower().startswith("table") else "Section heading"
+            lines.append(f"{heading_kind}: {chunk.section_label}")
+        if parent_path:
+            lines.append(f"Section path: {parent_path}")
+        elif chunk.section_path:
+            lines.append(f"Section path: {' > '.join(chunk.section_path)}")
+        if chunk.chapter_title:
+            lines.append(f"Chapter: {chunk.chapter_title}")
+        return "\n".join(lines) + "\n\n" + chunk.text
+
     def _get_reranker(self, model_key: str):
         key, model_name = self._resolve_reranker_model(model_key)
+        if self._is_external_reranker(key):
+            return key, model_name, None
         if key in self._rerankers:
             return key, model_name, self._rerankers[key]
+        if self._rerankers:
+            self._clear_rerankers()
         try:
             from sentence_transformers import CrossEncoder
 
@@ -127,6 +292,8 @@ class SearchEngine:
         top_k: int = 8,
         rerank: bool = True,
         reranker_model: str | None = None,
+        include_title_context: bool = True,
+        azure_foundry: dict[str, Any] | None = None,
     ) -> dict[str, Any]:
         started = time.time()
         query = query.strip()
@@ -137,6 +304,7 @@ class SearchEngine:
                 "query": query,
                 "top_k": top_k,
                 "rerank": rerank,
+                "include_title_context": include_title_context,
                 "reranker_model": reranker_key,
                 "reranker_model_name": reranker_model_name,
                 "query_confidence": 0.0,
@@ -177,10 +345,27 @@ class SearchEngine:
 
         warnings: list[str] = []
         if rerank and results:
-            reranker_key, reranker_model_name, reranker = self._get_reranker(reranker_key)
-            if reranker is not None:
-                pairs = [[query, result.chunk.text] for result in results]
-                raw_scores = reranker.predict(pairs, show_progress_bar=False)
+            documents = [
+                self._reranker_document(result, include_title_context)
+                for result in results
+            ]
+            raw_scores = []
+            reranker_available = False
+            with self._reranker_lock:
+                if self._is_external_reranker(reranker_key):
+                    try:
+                        raw_scores = self._azure_foundry_scores(query, documents, azure_foundry)
+                        reranker_available = True
+                        self.reranker_errors.pop(reranker_key, None)
+                    except Exception as exc:  # noqa: BLE001 - external provider failures should fall back to RRF.
+                        self.reranker_errors[reranker_key] = str(exc)
+                else:
+                    pairs = [[query, document] for document in documents]
+                    reranker_key, reranker_model_name, reranker = self._get_reranker(reranker_key)
+                    raw_scores = reranker.predict(pairs, show_progress_bar=False) if reranker is not None else []
+                    reranker_available = reranker is not None
+                    self._release_temporary_model_memory()
+            if reranker_available:
                 for result, raw in zip(results, raw_scores):
                     raw_value = float(raw)
                     result.reranker_score = raw_value
@@ -234,6 +419,7 @@ class SearchEngine:
             "query": query,
             "top_k": top_k,
             "rerank": rerank,
+            "include_title_context": include_title_context,
             "reranker_model": reranker_key,
             "reranker_model_name": reranker_model_name,
             "query_confidence": round(query_confidence, 4),

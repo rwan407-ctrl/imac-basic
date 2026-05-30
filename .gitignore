@@ -4,6 +4,7 @@ __pycache__/
 .pytest_cache/
 server*.log
 imac_search_*.png
+reranker_eval_*.json
 config/test_questions.local.json
 data/index/*.jsonl
 data/index/*.json

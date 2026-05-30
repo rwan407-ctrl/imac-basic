@@ -2,7 +2,13 @@ const form = document.querySelector("#search-form");
 const queryInput = document.querySelector("#query");
 const topKInput = document.querySelector("#top-k");
 const rerankInput = document.querySelector("#rerank");
+const titleContextInput = document.querySelector("#title-context");
 const rerankerModelInput = document.querySelector("#reranker-model");
+const azureSettings = document.querySelector("#azure-settings");
+const azureEndpointInput = document.querySelector("#azure-endpoint");
+const azureApiKeyInput = document.querySelector("#azure-api-key");
+const azureRequestFormatInput = document.querySelector("#azure-request-format");
+const azureAuthTypeInput = document.querySelector("#azure-auth-type");
 const testQuestionSelect = document.querySelector("#test-question-select");
 const testRunButton = document.querySelector("#test-run");
 const testSaveButton = document.querySelector("#test-save");
@@ -26,6 +32,9 @@ const chapterFrame = document.querySelector("#chapter-frame");
 
 const SEARCH_POOL_SIZE = 5;
 const TEST_BANK_STORAGE_KEY = "imac.testQuestions.v1";
+const AZURE_ENDPOINT_STORAGE_KEY = "imac.azureFoundryEndpoint.v1";
+const AZURE_FORMAT_STORAGE_KEY = "imac.azureFoundryFormat.v1";
+const AZURE_AUTH_STORAGE_KEY = "imac.azureFoundryAuth.v1";
 const BUILTIN_TEST_QUESTIONS = [
   {
     id: "builtin-mmr-pregnancy",
@@ -46,6 +55,14 @@ const BUILTIN_TEST_QUESTIONS = [
   {
     id: "builtin-rotavirus-age-limits",
     question: "rotavirus vaccine age limits",
+  },
+  {
+    id: "builtin-two-year-dtap-gap",
+    question: "2 year old, 4 month d-tap, 14 week gap, first valid?",
+  },
+  {
+    id: "builtin-azathioprine-mmr",
+    question: "4X year old women, Azathioprine, MMR",
   },
 ];
 let currentData = null;
@@ -79,6 +96,57 @@ function escapeHtml(value) {
 
 function badge(label, confidence) {
   return `<span class="badge ${label}">${label} ${Math.round(confidence * 100)}%</span>`;
+}
+
+function azureFoundryIsSelected() {
+  return rerankerModelInput?.value === "azure_foundry";
+}
+
+function syncAzureSettingsVisibility() {
+  if (!azureSettings) return;
+  azureSettings.hidden = !azureFoundryIsSelected();
+}
+
+function loadAzureSettings() {
+  try {
+    if (azureEndpointInput) {
+      azureEndpointInput.value = localStorage.getItem(AZURE_ENDPOINT_STORAGE_KEY) || "";
+    }
+    if (azureRequestFormatInput) {
+      azureRequestFormatInput.value = localStorage.getItem(AZURE_FORMAT_STORAGE_KEY) || "tei";
+    }
+    if (azureAuthTypeInput) {
+      azureAuthTypeInput.value = localStorage.getItem(AZURE_AUTH_STORAGE_KEY) || "bearer";
+    }
+  } catch (_error) {
+    // Local storage is only a convenience for the endpoint and dropdowns.
+  }
+}
+
+function persistAzureSettings() {
+  try {
+    if (azureEndpointInput) {
+      localStorage.setItem(AZURE_ENDPOINT_STORAGE_KEY, azureEndpointInput.value.trim());
+    }
+    if (azureRequestFormatInput) {
+      localStorage.setItem(AZURE_FORMAT_STORAGE_KEY, azureRequestFormatInput.value);
+    }
+    if (azureAuthTypeInput) {
+      localStorage.setItem(AZURE_AUTH_STORAGE_KEY, azureAuthTypeInput.value);
+    }
+  } catch (_error) {
+    // API keys are intentionally never stored; losing endpoint history is fine.
+  }
+}
+
+function azureFoundryPayload() {
+  if (!azureFoundryIsSelected()) return null;
+  return {
+    endpoint: azureEndpointInput?.value.trim() || "",
+    api_key: azureApiKeyInput?.value || "",
+    request_format: azureRequestFormatInput?.value || "tei",
+    auth_type: azureAuthTypeInput?.value || "bearer",
+  };
 }
 
 async function requestJson(url, options = {}) {
@@ -409,8 +477,19 @@ async function loadStats() {
     statusEl.dataset.state = "ready";
     statsEl.textContent = `${data.chunk_count} chunks across ${data.chapter_count} chapters`;
     if (data.reranker_models && rerankerModelInput) {
-      const defaultReranker = data.default_reranker_model || "jina";
-      const modelOrder = ["jina", "strong", "default"];
+      const defaultReranker = data.default_reranker_model || "strong";
+      const modelOrder = [
+        "strong",
+        "jina",
+        "mixedbread",
+        "qwen3_06b",
+        "bge_m3",
+        "bge_base",
+        "electra",
+        "default",
+        "fast",
+        "azure_foundry",
+      ];
       const orderedModels = [...data.reranker_models].sort((a, b) => {
         if (a.key === defaultReranker) return -1;
         if (b.key === defaultReranker) return 1;
@@ -422,6 +501,7 @@ async function loadStats() {
           return `<option value="${escapeHtml(item.key)}" ${selected}>${escapeHtml(item.label)}</option>`;
         })
         .join("");
+      syncAzureSettingsVisibility();
     }
   } catch (error) {
     statusEl.textContent = "offline";
@@ -563,6 +643,7 @@ async function performSearch(query) {
   summaryEl.hidden = true;
 
   try {
+    persistAzureSettings();
     const data = await requestJson("/api/search", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -570,7 +651,9 @@ async function performSearch(query) {
         query,
         top_k: Number(topKInput.value || SEARCH_POOL_SIZE),
         rerank: rerankInput.checked,
-        reranker_model: rerankerModelInput.value || "jina",
+        include_title_context: titleContextInput.checked,
+        reranker_model: rerankerModelInput.value || "strong",
+        azure_foundry: azureFoundryPayload(),
       }),
     });
     renderResults(data);
@@ -628,8 +711,13 @@ async function initialize() {
   const params = new URLSearchParams(window.location.search);
   const urlQuery = params.get("q");
   const urlRerankerModel = params.get("reranker_model");
+  const urlTitleContext = params.get("title_context");
   if (urlRerankerModel && rerankerModelInput.querySelector(`option[value="${CSS.escape(urlRerankerModel)}"]`)) {
     rerankerModelInput.value = urlRerankerModel;
+  }
+  syncAzureSettingsVisibility();
+  if (urlTitleContext === "0" || urlTitleContext === "false") {
+    titleContextInput.checked = false;
   }
   if (urlQuery) {
     queryInput.value = urlQuery;
@@ -638,3 +726,12 @@ async function initialize() {
 }
 
 initialize();
+
+rerankerModelInput?.addEventListener("change", syncAzureSettingsVisibility);
+rerankerModelInput?.addEventListener("input", syncAzureSettingsVisibility);
+window.setInterval(syncAzureSettingsVisibility, 500);
+azureEndpointInput?.addEventListener("change", persistAzureSettings);
+azureRequestFormatInput?.addEventListener("change", persistAzureSettings);
+azureAuthTypeInput?.addEventListener("change", persistAzureSettings);
+loadAzureSettings();
+syncAzureSettingsVisibility();

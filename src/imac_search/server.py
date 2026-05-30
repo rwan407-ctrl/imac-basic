@@ -27,6 +27,13 @@ def json_bytes(payload, status: int = 200) -> tuple[int, bytes, str]:
     return status, json.dumps(payload, ensure_ascii=False).encode("utf-8"), "application/json; charset=utf-8"
 
 
+def payload_bool(payload: dict, key: str, default: bool) -> bool:
+    value = payload.get(key, default)
+    if isinstance(value, str):
+        return value.strip().lower() not in {"0", "false", "no", "off"}
+    return bool(value)
+
+
 class Handler(BaseHTTPRequestHandler):
     server_version = "IMACHybridSearch/0.1"
 
@@ -73,8 +80,12 @@ class Handler(BaseHTTPRequestHandler):
             response = get_engine().search(
                 str(payload.get("query", "")),
                 top_k=int(payload.get("top_k", 8)),
-                rerank=bool(payload.get("rerank", True)),
+                rerank=payload_bool(payload, "rerank", True),
                 reranker_model=str(payload.get("reranker_model", settings.default_reranker_key)),
+                include_title_context=payload_bool(payload, "include_title_context", True),
+                azure_foundry=payload.get("azure_foundry")
+                if isinstance(payload.get("azure_foundry"), dict)
+                else None,
             )
             self._send_json(response)
         except Exception as exc:

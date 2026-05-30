@@ -482,7 +482,7 @@ button:hover {
 }
 
 .settings-menu[open] {
-  min-width: 190px;
+  min-width: min(430px, calc(100vw - 48px));
 }
 
 .test-menu[open] {
@@ -508,6 +508,40 @@ button:hover {
 .settings-menu select,
 .test-menu select {
   width: 100%;
+}
+
+.azure-settings {
+  display: grid;
+  gap: 8px;
+  margin-top: 10px;
+  padding: 10px;
+  border: 1px solid rgba(200, 214, 224, 0.62);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.44);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.74);
+}
+
+.azure-settings[hidden] {
+  display: none;
+}
+
+.azure-settings input {
+  min-height: 36px;
+  padding: 7px 10px;
+  font-size: 13px;
+}
+
+.azure-settings p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.azure-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
 }
 
 .mode-note {

@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>IMAC Handbook Search</title>
-    <link rel="stylesheet" href="/styles.css?v=strongest-default-1" />
+    <link rel="stylesheet" href="/styles.css?v=azure-foundry-1" />
   </head>
   <body>
     <header class="topbar">
@@ -49,12 +49,47 @@
                 <input id="rerank" type="checkbox" checked />
                 Rerank
               </label>
+              <label class="check">
+                <input id="title-context" type="checkbox" checked />
+                Use table/section titles
+              </label>
               <label for="reranker-model">Reranker</label>
               <select id="reranker-model" name="reranker-model">
-                <option value="jina" selected>Strongest (Jina)</option>
-                <option value="strong">Stronger</option>
+                <option value="strong" selected>Stronger</option>
+                <option value="jina">Strongest (Jina)</option>
+                <option value="mixedbread">Mixedbread Base v2</option>
+                <option value="qwen3_06b">Qwen3 0.6B</option>
+                <option value="bge_m3">BGE v2 M3</option>
+                <option value="bge_base">BGE Base</option>
+                <option value="electra">MS MARCO Electra</option>
                 <option value="default">Default</option>
+                <option value="fast">Fast (MiniLM L4)</option>
+                <option value="azure_foundry">Azure Foundry API</option>
               </select>
+              <div class="azure-settings" id="azure-settings" hidden>
+                <label for="azure-endpoint">Foundry endpoint</label>
+                <input id="azure-endpoint" autocomplete="off" placeholder="https://...models.ai.azure.com" />
+                <label for="azure-api-key">API key or token</label>
+                <input id="azure-api-key" type="password" autocomplete="off" placeholder="Not saved" />
+                <div class="azure-grid">
+                  <label>
+                    Request format
+                    <select id="azure-request-format">
+                      <option value="tei" selected>TEI /rerank</option>
+                      <option value="cohere">Cohere rerank</option>
+                    </select>
+                  </label>
+                  <label>
+                    Auth header
+                    <select id="azure-auth-type">
+                      <option value="bearer" selected>Bearer token</option>
+                      <option value="api-key">api-key</option>
+                      <option value="x-api-key">x-api-key</option>
+                    </select>
+                  </label>
+                </div>
+                <p>For TEI endpoints, a base URL is OK; the app adds /rerank. API keys stay in this browser request.</p>
+              </div>
             </details>
             <details class="test-menu" id="test-menu">
               <summary>Tests</summary>
@@ -104,6 +139,6 @@
       </section>
     </main>
 
-    <script src="/app.js?v=strongest-default-1"></script>
+    <script src="/app.js?v=azure-foundry-1"></script>
   </body>
 </html>

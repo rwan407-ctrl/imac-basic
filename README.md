@@ -41,9 +41,11 @@ To try the "Decision Watershed" desktop-style entry point:
 python scripts\desktop_entry.py
 ```
 
-This opens a small local search bar. The browser does not open until you click `Search`. The launcher first prepares the retrieval request locally, so a first-time `Strongest (Jina)` reranker load stays inside the search window; once the model and results are ready, it opens directly into highlighted handbook evidence for that query. If the local service is already running on port `8765`, the search bar reuses it. The desktop launcher also includes a `Tests` dropdown with built-in smoke-test questions plus locally saved questions. Desktop saved questions are stored in `config\test_questions.local.json`, which is ignored by Git.
+This opens a small local search bar. The browser does not open until you click `Search`. The launcher first prepares the retrieval request locally, so a first-time reranker load stays inside the search window; once the model and results are ready, it opens directly into highlighted handbook evidence for that query. If the local service is already running on port `8765`, the search bar reuses it. The desktop launcher also includes a `Tests` dropdown with built-in smoke-test questions plus locally saved questions. Desktop saved questions are stored in `config\test_questions.local.json`, which is ignored by Git.
 
-The search bar and web launcher default to `Strongest (Jina)`, which uses `jinaai/jina-reranker-v2-base-multilingual` with local `sentence-transformers` execution. Users must open `Settings` to downgrade to `Stronger` or `Default` for speed. Stronger models may take longer the first time they are selected because the model has to be downloaded and loaded. The Jina model card lists a CC-BY-NC-4.0 license, so review licensing before commercial deployment.
+The search bar and web launcher default to `Stronger`, which uses `cross-encoder/ms-marco-MiniLM-L-12-v2` with local `sentence-transformers` execution. By default, reranking includes chapter, table/section heading, parent section path, and chunk text; users can turn off `Use table/section titles` in `Settings` to compare the older text-only rerank behavior. Users can also switch among local rerankers including Jina, Mixedbread, Qwen3, BGE, Electra, and smaller MiniLM variants. The web Settings menu also includes an experimental `Azure Foundry API` reranker option for calling a user-provided Azure AI Foundry rerank endpoint. Larger local models may take longer the first time they are selected because the model has to be downloaded and loaded. The Jina model card lists a CC-BY-NC-4.0 license, so review licensing before commercial deployment.
+
+Only one reranker is kept in memory at a time. When users switch reranker models, the previous model is unloaded before the next one is loaded so several large models can be tested one by one without accumulating GPU/CPU memory use.
 
 To start only the local service in the background without showing the search bar:
 
@@ -98,11 +100,32 @@ Search body:
   "query": "MMR contraindications during pregnancy",
   "top_k": 5,
   "rerank": true,
-  "reranker_model": "jina"
+  "reranker_model": "strong",
+  "include_title_context": true
 }
 ```
 
-Available reranker values are `jina`, `strong`, and `default`. If omitted, the backend uses `jina`.
+Available reranker values are `strong`, `jina`, `mixedbread`, `qwen3_06b`, `bge_m3`, `bge_base`, `electra`, `default`, `fast`, and `azure_foundry`. If omitted, the backend uses `strong`.
+
+For Azure AI Foundry TEI-style rerank endpoints:
+
+```json
+{
+  "query": "4X year old women, Azathioprine, MMR",
+  "top_k": 5,
+  "rerank": true,
+  "reranker_model": "azure_foundry",
+  "include_title_context": false,
+  "azure_foundry": {
+    "endpoint": "https://example.models.ai.azure.com",
+    "api_key": "<token>",
+    "request_format": "tei",
+    "auth_type": "bearer"
+  }
+}
+```
+
+`request_format` can be `tei` for `query + texts` endpoints or `cohere` for `query + documents + top_n` endpoints. `auth_type` can be `bearer`, `api-key`, or `x-api-key`. Do not commit real keys.
 
 Confidence is retrieval confidence only. It is not a measure of clinical correctness.
 

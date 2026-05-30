@@ -31,12 +31,20 @@ DEFAULT_TEST_QUESTIONS = [
     {"id": "builtin-zoster-eligibility", "question": "zoster vaccine eligibility"},
     {"id": "builtin-six-week-schedule", "question": "6-week immunisation schedule"},
     {"id": "builtin-rotavirus-age-limits", "question": "rotavirus vaccine age limits"},
+    {"id": "builtin-two-year-dtap-gap", "question": "2 year old, 4 month d-tap, 14 week gap, first valid?"},
+    {"id": "builtin-azathioprine-mmr", "question": "4X year old women, Azathioprine, MMR"},
 ]
-DEFAULT_RERANKER_LABEL = "Strongest (Jina)"
+DEFAULT_RERANKER_LABEL = "Stronger"
 RERANKER_CHOICES = {
-    "Strongest (Jina)": "jina",
     "Stronger": "strong",
+    "Strongest (Jina)": "jina",
+    "Mixedbread Base v2": "mixedbread",
+    "Qwen3 0.6B": "qwen3_06b",
+    "BGE v2 M3": "bge_m3",
+    "BGE Base": "bge_base",
+    "MS MARCO Electra": "electra",
     "Default": "default",
+    "Fast (MiniLM L4)": "fast",
 }
 BASE_WINDOW_GEOMETRY = "760x270"
 SETTINGS_WINDOW_GEOMETRY = "760x310"
@@ -181,12 +189,15 @@ def _app_url(
     host: str,
     port: int,
     query: str | None = None,
-    reranker_model: str = "jina",
+    reranker_model: str = "strong",
+    include_title_context: bool = True,
 ) -> str:
     params = {"version": "decision-watershed"}
     if query:
         params["q"] = query
         params["reranker_model"] = reranker_model
+        if not include_title_context:
+            params["title_context"] = "0"
     return f"http://{host}:{port}/?{urllib.parse.urlencode(params)}"
 
 
@@ -199,13 +210,20 @@ def _service_is_running(host: str, port: int) -> bool:
         return False
 
 
-def _preload_search(host: str, port: int, query: str, reranker_model: str) -> dict:
+def _preload_search(
+    host: str,
+    port: int,
+    query: str,
+    reranker_model: str,
+    include_title_context: bool = True,
+) -> dict:
     payload = json.dumps(
         {
             "query": query,
             "top_k": 5,
             "rerank": True,
             "reranker_model": reranker_model,
+            "include_title_context": include_title_context,
         }
     ).encode("utf-8")
     request = urllib.request.Request(
@@ -347,13 +365,27 @@ def _show_search_window(host: str, port: int) -> None:
         textvariable=model_var,
         values=tuple(model_choices.keys()),
         state="readonly",
-        width=18,
+        width=22,
     )
     model_select.pack(side="left", padx=(8, 0))
 
+    title_context_var = tk.BooleanVar(value=True)
+    title_context_check = tk.Checkbutton(
+        settings_row,
+        text="Use titles",
+        variable=title_context_var,
+        bg="#eef4f8",
+        fg="#0b1f4d",
+        activebackground="#eef4f8",
+        activeforeground="#0b1f4d",
+        selectcolor="#ffffff",
+        font=("Segoe UI", 9),
+    )
+    title_context_check.pack(side="left", padx=(10, 0))
+
     model_hint = tk.Label(
         settings_row,
-        text="Only change this if you want to downgrade for speed.",
+        text="Titles help table matching; turn off to compare old text-only rerank.",
         bg="#eef4f8",
         fg="#657084",
         font=("Segoe UI", 9),
@@ -461,6 +493,7 @@ def _show_search_window(host: str, port: int) -> None:
         button.config(state="disabled" if is_busy else "normal")
         settings_button.config(state="disabled" if is_busy else "normal")
         model_select.config(state="disabled" if is_busy else "readonly")
+        title_context_check.config(state="disabled" if is_busy else "normal")
         test_select.config(state="disabled" if is_busy else "readonly")
         run_test_button.config(state="disabled" if is_busy else "normal")
         save_test_button.config(state="disabled" if is_busy else "normal")
@@ -572,6 +605,7 @@ def _show_search_window(host: str, port: int) -> None:
             return
         selected_label = model_var.get()
         selected_model = model_choices[selected_label]
+        include_title_context = bool(title_context_var.get())
         loading_text = (
             "Loading local reranker, then opening results..."
             if selected_model in {"strong", "jina"}
@@ -582,9 +616,9 @@ def _show_search_window(host: str, port: int) -> None:
 
         def worker() -> None:
             try:
-                _preload_search(host, port, query, selected_model)
+                _preload_search(host, port, query, selected_model, include_title_context)
                 root.after(0, set_status, "Ready. Opening highlighted handbook page...")
-                webbrowser.open(_app_url(host, port, query, selected_model))
+                webbrowser.open(_app_url(host, port, query, selected_model, include_title_context))
                 root.after(0, set_status, f"Opened results at 127.0.0.1:{port}")
             except Exception as exc:  # noqa: BLE001 - show launcher-friendly error.
                 root.after(0, set_status, "Search did not complete.")
