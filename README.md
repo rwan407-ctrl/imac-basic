@@ -17,6 +17,24 @@ The frontend also serves the styled handbook export from `static\handbook`. Sear
 
 ## Run
 
+Install dependencies once after cloning or downloading the project.
+
+Windows PowerShell:
+
+```powershell
+cd C:\Users\fwang\Desktop\imac-basic
+python -m pip install -r requirements.txt
+```
+
+macOS or Linux:
+
+```bash
+cd ~/Desktop/imac-basic
+python3 -m pip install -r requirements.txt
+```
+
+`pip install -r requirements.txt` also works when `pip` already points to the same Python environment. `python -m pip` is safer because it installs into the Python interpreter used to run the app.
+
 ```powershell
 cd C:\Users\fwang\Desktop\imac_hybrid_search_tool
 python scripts\build_index.py
@@ -39,6 +57,12 @@ To try the "Decision Watershed" desktop-style entry point:
 
 ```powershell
 python scripts\desktop_entry.py
+```
+
+On macOS or Linux, use forward slashes and `python3` if needed:
+
+```bash
+python3 scripts/desktop_entry.py
 ```
 
 This opens a small local search bar. The browser does not open until you click `Search`. The launcher first prepares the retrieval request locally, so a first-time reranker load stays inside the search window; once the model and results are ready, it opens directly into highlighted handbook evidence for that query. If the local service is already running on port `8765`, the search bar reuses it. The desktop launcher also includes a `Tests` dropdown with built-in smoke-test questions plus locally saved questions. Desktop saved questions are stored in `config\test_questions.local.json`, which is ignored by Git.
