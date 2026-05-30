@@ -9,6 +9,7 @@ from urllib.parse import parse_qs, unquote, urlparse
 
 from .chapter_view import render_highlighted_chapter
 from .config import PROJECT_ROOT, settings
+from .indexer import index_exists
 from .search import SearchEngine
 
 
@@ -55,7 +56,7 @@ class Handler(BaseHTTPRequestHandler):
         parsed = urlparse(self.path)
         path = parsed.path
         if path == "/health":
-            self._send_json({"ok": True, "index_exists": settings.chunks_path.exists() and settings.embeddings_path.exists()})
+            self._send_json({"ok": True, "index_exists": index_exists()})
             return
         if path == "/api/stats":
             try:

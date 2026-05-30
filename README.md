@@ -43,6 +43,8 @@ python scripts\serve.py --port 8765
 
 Open http://127.0.0.1:8765
 
+The generated `data\index` folder is intentionally not committed to GitHub. If the index is missing, the app rebuilds it from the bundled `static\handbook` files the first time search/stats are used. That first run can take longer because the embedding model may need to download.
+
 The styled handbook files live under:
 
 ```text

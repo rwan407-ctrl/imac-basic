@@ -12,6 +12,29 @@ from .dense import EmbeddingModel
 from .ingest import build_chunks, save_chunks
 
 
+def index_exists(index_dir: Path | None = None) -> bool:
+    index_dir = index_dir or settings.index_dir
+    return (index_dir / "chunks.jsonl").exists() and (index_dir / "embeddings.npy").exists()
+
+
+def ensure_index(source_dir: Path | None = None, index_dir: Path | None = None) -> dict:
+    source_dir = source_dir or settings.source_dir
+    index_dir = index_dir or settings.index_dir
+    metadata_path = index_dir / "metadata.json"
+    if index_exists(index_dir):
+        if metadata_path.exists():
+            try:
+                return json.loads(metadata_path.read_text(encoding="utf-8"))
+            except json.JSONDecodeError:
+                pass
+        return {
+            "source_dir": str(source_dir),
+            "index_dir": str(index_dir),
+            "index_exists": True,
+        }
+    return build_index(source_dir, index_dir)
+
+
 def build_index(source_dir: Path | None = None, index_dir: Path | None = None) -> dict:
     source_dir = source_dir or settings.source_dir
     index_dir = index_dir or settings.index_dir
@@ -40,4 +63,3 @@ def build_index(source_dir: Path | None = None, index_dir: Path | None = None) -
     }
     (index_dir / "metadata.json").write_text(json.dumps(metadata, indent=2), encoding="utf-8")
     return metadata
-

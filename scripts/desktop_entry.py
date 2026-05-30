@@ -606,9 +606,9 @@ def _show_search_window(host: str, port: int) -> None:
         selected_model = model_choices[selected_label]
         include_title_context = bool(title_context_var.get())
         loading_text = (
-            "Loading local reranker, then opening results..."
+            "Building local index or reranker if needed, then opening results..."
             if selected_model in {"strong", "jina"}
-            else "Searching, then opening results..."
+            else "Building local index if needed, then opening results..."
         )
         set_busy(True)
         set_status(loading_text)

@@ -21,6 +21,7 @@ from .config import RERANKER_MODEL_PRESETS
 from .dense import EmbeddingModel
 from .fusion import rank_map, reciprocal_rank_fusion, score_map
 from .html_fragments import HtmlFragmentProvider
+from .indexer import ensure_index
 from .ingest import load_chunks
 from .models import SearchResult
 from .text import make_snippet, tokenize
@@ -55,6 +56,7 @@ def _compact_error_body(body: bytes, limit: int = 420) -> str:
 class SearchEngine:
     def __init__(self, index_dir: Path | None = None):
         self.index_dir = index_dir or settings.index_dir
+        ensure_index(index_dir=self.index_dir)
         self.chunks = load_chunks(self.index_dir / "chunks.jsonl")
         self.embeddings = np.load(self.index_dir / "embeddings.npy").astype(np.float32)
         self.bm25 = BM25Index([chunk.text for chunk in self.chunks])
