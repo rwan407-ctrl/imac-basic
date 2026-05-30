@@ -82,7 +82,7 @@ class Handler(BaseHTTPRequestHandler):
                 top_k=int(payload.get("top_k", 8)),
                 rerank=payload_bool(payload, "rerank", True),
                 reranker_model=str(payload.get("reranker_model", settings.default_reranker_key)),
-                include_title_context=payload_bool(payload, "include_title_context", True),
+                include_title_context=payload_bool(payload, "include_title_context", False),
                 azure_foundry=payload.get("azure_foundry")
                 if isinstance(payload.get("azure_foundry"), dict)
                 else None,

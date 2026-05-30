@@ -19,6 +19,12 @@ class DesktopEntryTestQuestionTests(unittest.TestCase):
             "jina",
         )
 
+    def test_app_url_defaults_to_text_only_rerank(self):
+        url = desktop_entry._app_url("127.0.0.1", 8765, "MMR")
+
+        self.assertIn("reranker_model=jina", url)
+        self.assertIn("title_context=0", url)
+
     def test_save_load_test_bank(self):
         with tempfile.TemporaryDirectory() as tmp:
             path = Path(tmp) / "test_questions.local.json"

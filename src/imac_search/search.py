@@ -248,7 +248,7 @@ class SearchEngine:
         except Exception:
             pass
 
-    def _reranker_document(self, result: SearchResult, include_title_context: bool = True) -> str:
+    def _reranker_document(self, result: SearchResult, include_title_context: bool = False) -> str:
         chunk = result.chunk
         if not include_title_context:
             return chunk.text
@@ -292,7 +292,7 @@ class SearchEngine:
         top_k: int = 8,
         rerank: bool = True,
         reranker_model: str | None = None,
-        include_title_context: bool = True,
+        include_title_context: bool = False,
         azure_foundry: dict[str, Any] | None = None,
     ) -> dict[str, Any]:
         started = time.time()

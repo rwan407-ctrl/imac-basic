@@ -718,6 +718,8 @@ async function initialize() {
   syncAzureSettingsVisibility();
   if (urlTitleContext === "0" || urlTitleContext === "false") {
     titleContextInput.checked = false;
+  } else if (urlTitleContext === "1" || urlTitleContext === "true") {
+    titleContextInput.checked = true;
   }
   if (urlQuery) {
     queryInput.value = urlQuery;

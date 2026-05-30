@@ -141,7 +141,7 @@ class RerankerPresetTests(unittest.TestCase):
             rrf_score=0.01,
         )
 
-        document = self.engine._reranker_document(result)
+        document = self.engine._reranker_document(result, include_title_context=True)
 
         self.assertIn(
             "Table heading: Table A2.6: Age at presentation: 2 years to under 5 years",

@@ -43,7 +43,7 @@ python scripts\desktop_entry.py
 
 This opens a small local search bar. The browser does not open until you click `Search`. The launcher first prepares the retrieval request locally, so a first-time reranker load stays inside the search window; once the model and results are ready, it opens directly into highlighted handbook evidence for that query. If the local service is already running on port `8765`, the search bar reuses it. The desktop launcher also includes a `Tests` dropdown with built-in smoke-test questions plus locally saved questions. Desktop saved questions are stored in `config\test_questions.local.json`, which is ignored by Git.
 
-The search bar and web launcher default to `Strongest (Jina)`, which uses `jinaai/jina-reranker-v2-base-multilingual` with local `sentence-transformers` execution. By default, reranking includes chapter, table/section heading, parent section path, and chunk text; users can turn off `Use table/section titles` in `Settings` to compare the older text-only rerank behavior. Users can also switch among local rerankers including Stronger MiniLM, Mixedbread, Qwen3, BGE, Electra, and smaller MiniLM variants. The web Settings menu also includes an experimental `Azure Foundry API` reranker option for calling a user-provided Azure AI Foundry rerank endpoint. Larger local models may take longer the first time they are selected because the model has to be downloaded and loaded. The Jina model card lists a CC-BY-NC-4.0 license, so review licensing before commercial deployment.
+The search bar and web launcher default to `Strongest (Jina)`, which uses `jinaai/jina-reranker-v2-base-multilingual` with local `sentence-transformers` execution. By default, reranking uses the chunk text only and does not include chapter, table/section heading, or parent section path. Users can turn on `Use table/section titles` in `Settings` to compare title-aware rerank behavior. Users can also switch among local rerankers including Stronger MiniLM, Mixedbread, Qwen3, BGE, Electra, and smaller MiniLM variants. The web Settings menu also includes an experimental `Azure Foundry API` reranker option for calling a user-provided Azure AI Foundry rerank endpoint. Larger local models may take longer the first time they are selected because the model has to be downloaded and loaded. The Jina model card lists a CC-BY-NC-4.0 license, so review licensing before commercial deployment.
 
 Only one reranker is kept in memory at a time. When users switch reranker models, the previous model is unloaded before the next one is loaded so several large models can be tested one by one without accumulating GPU/CPU memory use.
 
@@ -101,7 +101,7 @@ Search body:
   "top_k": 5,
   "rerank": true,
   "reranker_model": "jina",
-  "include_title_context": true
+  "include_title_context": false
 }
 ```
 

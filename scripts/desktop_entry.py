@@ -190,14 +190,13 @@ def _app_url(
     port: int,
     query: str | None = None,
     reranker_model: str = "jina",
-    include_title_context: bool = True,
+    include_title_context: bool = False,
 ) -> str:
     params = {"version": "decision-watershed"}
     if query:
         params["q"] = query
         params["reranker_model"] = reranker_model
-        if not include_title_context:
-            params["title_context"] = "0"
+        params["title_context"] = "1" if include_title_context else "0"
     return f"http://{host}:{port}/?{urllib.parse.urlencode(params)}"
 
 
@@ -215,7 +214,7 @@ def _preload_search(
     port: int,
     query: str,
     reranker_model: str,
-    include_title_context: bool = True,
+    include_title_context: bool = False,
 ) -> dict:
     payload = json.dumps(
         {
@@ -369,7 +368,7 @@ def _show_search_window(host: str, port: int) -> None:
     )
     model_select.pack(side="left", padx=(8, 0))
 
-    title_context_var = tk.BooleanVar(value=True)
+    title_context_var = tk.BooleanVar(value=False)
     title_context_check = tk.Checkbutton(
         settings_row,
         text="Use titles",
