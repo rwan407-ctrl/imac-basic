@@ -6,6 +6,7 @@ import inspect
 import threading
 import time
 import gc
+import os
 from pathlib import Path
 from typing import Any
 import urllib.error
@@ -16,7 +17,7 @@ import numpy as np
 
 from .bm25 import BM25Index
 from .confidence import apply_confidence, label_for
-from .config import settings
+from .config import PROJECT_ROOT, settings
 from .config import RERANKER_MODEL_PRESETS
 from .dense import EmbeddingModel
 from .fusion import rank_map, reciprocal_rank_fusion, score_map
@@ -51,6 +52,13 @@ def _bounded(value: float) -> float:
 def _compact_error_body(body: bytes, limit: int = 420) -> str:
     text = body.decode("utf-8", errors="replace").strip()
     return text[:limit] + ("..." if len(text) > limit else "")
+
+
+def _read_secret_file(path: Path) -> str:
+    try:
+        return path.expanduser().read_text(encoding="utf-8").strip()
+    except OSError:
+        return ""
 
 
 class SearchEngine:
@@ -89,6 +97,9 @@ class SearchEngine:
             "reranker_loaded": bool(self._rerankers),
             "loaded_reranker_models": list(self._rerankers.keys()),
             "reranker_errors": self.reranker_errors,
+            "azure_foundry_local_key_configured": bool(
+                self._local_azure_foundry_config().get("api_key")
+            ),
             "metadata": self.metadata,
         }
 
@@ -143,6 +154,54 @@ class SearchEngine:
         else:
             headers["Authorization"] = f"Bearer {api_key}"
         return headers
+
+    def _local_azure_foundry_config(self) -> dict[str, str]:
+        config: dict[str, str] = {}
+        local_config_path = Path(
+            os.getenv(
+                "IMAC_AZURE_FOUNDRY_CONFIG",
+                str(PROJECT_ROOT / "config" / "azure_foundry.local.json"),
+            )
+        )
+        if local_config_path.exists():
+            try:
+                payload = json.loads(local_config_path.read_text(encoding="utf-8"))
+                if isinstance(payload, dict):
+                    for key in ("endpoint", "api_key", "request_format", "auth_type", "model"):
+                        value = payload.get(key)
+                        if value:
+                            config[key] = str(value)
+            except (OSError, json.JSONDecodeError):
+                pass
+
+        key_file = os.getenv(
+            "IMAC_AZURE_FOUNDRY_KEY_FILE",
+            str(PROJECT_ROOT / "config" / "azure_foundry.key"),
+        )
+        file_key = _read_secret_file(Path(key_file))
+        if file_key:
+            config["api_key"] = file_key
+        env_key = os.getenv("IMAC_AZURE_FOUNDRY_API_KEY", "").strip()
+        if env_key:
+            config["api_key"] = env_key
+
+        for env_name, config_key in (
+            ("IMAC_AZURE_FOUNDRY_ENDPOINT", "endpoint"),
+            ("IMAC_AZURE_FOUNDRY_REQUEST_FORMAT", "request_format"),
+            ("IMAC_AZURE_FOUNDRY_AUTH_TYPE", "auth_type"),
+            ("IMAC_AZURE_FOUNDRY_MODEL", "model"),
+        ):
+            value = os.getenv(env_name, "").strip()
+            if value:
+                config[config_key] = value
+        return config
+
+    def _azure_foundry_config(self, request_config: dict[str, Any] | None) -> dict[str, Any]:
+        config: dict[str, Any] = self._local_azure_foundry_config()
+        for key, value in (request_config or {}).items():
+            if value not in (None, ""):
+                config[key] = value
+        return config
 
     def _azure_foundry_payload(
         self,
@@ -218,7 +277,7 @@ class SearchEngine:
         documents: list[str],
         config: dict[str, Any] | None,
     ) -> list[float]:
-        config = config or {}
+        config = self._azure_foundry_config(config)
         endpoint, body = self._azure_foundry_payload(query, documents, config)
         headers = self._azure_foundry_headers(
             str(config.get("api_key") or ""),

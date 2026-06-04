@@ -70,7 +70,7 @@
                 <label for="azure-endpoint">Foundry endpoint</label>
                 <input id="azure-endpoint" autocomplete="off" placeholder="https://...models.ai.azure.com" />
                 <label for="azure-api-key">API key or token</label>
-                <input id="azure-api-key" type="password" autocomplete="off" placeholder="Not saved" />
+                <input id="azure-api-key" type="password" autocomplete="off" placeholder="Optional when local key is configured" />
                 <div class="azure-grid">
                   <label>
                     Request format
@@ -88,7 +88,7 @@
                     </select>
                   </label>
                 </div>
-                <p>For TEI endpoints, a base URL is OK; the app adds /rerank. API keys stay in this browser request.</p>
+                <p>For TEI endpoints, a base URL is OK; the app adds /rerank. Leave the key blank when a local key file or environment variable is configured.</p>
               </div>
             </details>
             <details class="test-menu" id="test-menu">

@@ -153,6 +153,26 @@ For Azure AI Foundry TEI-style rerank endpoints:
 
 `request_format` can be `tei` for `query + texts` endpoints or `cohere` for `query + documents + top_n` endpoints. `auth_type` can be `bearer`, `api-key`, or `x-api-key`. Do not commit real keys.
 
+For local use, the API key can be stored outside Git in either of these ignored files:
+
+```text
+config\azure_foundry.key
+config\azure_foundry.local.json
+```
+
+`config\azure_foundry.key` should contain only the key/token. `config\azure_foundry.local.json` can contain optional defaults:
+
+```json
+{
+  "endpoint": "https://example.models.ai.azure.com",
+  "api_key": "<token>",
+  "request_format": "tei",
+  "auth_type": "bearer"
+}
+```
+
+Environment variables are also supported: `IMAC_AZURE_FOUNDRY_API_KEY`, `IMAC_AZURE_FOUNDRY_KEY_FILE`, `IMAC_AZURE_FOUNDRY_ENDPOINT`, `IMAC_AZURE_FOUNDRY_REQUEST_FORMAT`, and `IMAC_AZURE_FOUNDRY_AUTH_TYPE`.
+
 Confidence is retrieval confidence only. It is not a measure of clinical correctness.
 
 ## Tests

@@ -6,6 +6,8 @@ server*.log
 imac_search_*.png
 reranker_eval_*.json
 config/test_questions.local.json
+config/azure_foundry.local.json
+config/azure_foundry.key
 data/index/*.jsonl
 data/index/*.json
 data/index/*.npy

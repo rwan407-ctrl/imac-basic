@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 import sys
 import unittest
 from pathlib import Path
@@ -73,6 +74,27 @@ class RerankerPresetTests(unittest.TestCase):
         )
         self.assertEqual(RERANKER_MODEL_PRESETS["azure_foundry"]["external"], "azure_foundry")
         self.assertEqual(RERANKER_MODEL_PRESETS["azure_foundry"]["score_transform"], "identity")
+
+    def test_azure_foundry_config_can_use_local_secret_fallback(self):
+        os.environ["IMAC_AZURE_FOUNDRY_API_KEY"] = "local-secret"
+        os.environ["IMAC_AZURE_FOUNDRY_ENDPOINT"] = "https://example.models.ai.azure.com"
+        try:
+            config = self.engine._azure_foundry_config({})
+        finally:
+            os.environ.pop("IMAC_AZURE_FOUNDRY_API_KEY", None)
+            os.environ.pop("IMAC_AZURE_FOUNDRY_ENDPOINT", None)
+
+        self.assertEqual(config["api_key"], "local-secret")
+        self.assertEqual(config["endpoint"], "https://example.models.ai.azure.com")
+
+    def test_azure_foundry_request_config_overrides_local_secret(self):
+        os.environ["IMAC_AZURE_FOUNDRY_API_KEY"] = "local-secret"
+        try:
+            config = self.engine._azure_foundry_config({"api_key": "request-secret"})
+        finally:
+            os.environ.pop("IMAC_AZURE_FOUNDRY_API_KEY", None)
+
+        self.assertEqual(config["api_key"], "request-secret")
 
     def test_jina_is_default_when_model_key_is_omitted(self):
         key, _model = self.engine._resolve_reranker_model(None)
