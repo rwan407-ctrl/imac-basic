@@ -1,0 +1,1175 @@
+<title>光、物质与遥感</title>
+<meta name="description" content="用交互式 SVG 动画解释光在反射与折射时究竟发生了什么：从电磁场、电子振动、量子路径，到植被光谱、热辐射与雷达遥感。">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans+SC:wght@400;500;700&family=Noto+Serif+SC:wght@600;900&family=STIX+Two+Text:ital,wght@0,400;0,600;1,400&display=swap">
+<style>
+/* Layout: one reading column (~43rem) with instrument-panel figures that break out to ~68rem.
+   Figures sit on an optical-breadboard dot grid; physics colours are fixed roles:
+   E field = vermilion, B field = blue, matter/electrons = teal, photons/phasors = amber. */
+:root {
+  --bg: #f1f3f7;
+  --surface: #fbfcfd;
+  --ink: #121826;
+  --ink-2: #3a4355;
+  --muted: #667085;
+  --rule: #d6dce5;
+  --grid: #e3e7ee;
+  --axis: #b3bcc9;
+  --dot: #d3d9e2;
+  --efield: #d4521a;
+  --bfield: #2465c9;
+  --matter: #0f8c74;
+  --photon: #b06f0c;
+  --medium: rgba(36, 101, 201, 0.07);
+  --medium-2: rgba(36, 101, 201, 0.15);
+  --medium-edge: rgba(36, 101, 201, 0.45);
+  --ground: #cdbb9c;
+  --ground-2: #a48b63;
+  --water: #2a78d6;
+  --water-fill: rgba(42, 120, 214, 0.16);
+  --veg: #2e8b47;
+  --veg-fill: rgba(46, 139, 71, 0.16);
+  --nir: #b0207f;
+  --swir: #6a4bc4;
+  --tir: #c0391b;
+  --mw: #3d7a8a;
+  --uv: #6b4fd8;
+  --s1: #2a78d6;
+  --s2: #eb6834;
+  --s3: #1baf7a;
+  --s4: #eda100;
+  --focus: #2465c9;
+  --font-display: "Noto Serif SC", "Source Han Serif SC", "Songti SC", "STSong", serif;
+  --font-body: "Noto Sans SC", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "WenQuanYi Zen Hei", system-ui, sans-serif;
+  --font-math: "STIX Two Text", "Cambria Math", "Times New Roman", serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0a0f17;
+    --surface: #101722;
+    --ink: #e8ecf3;
+    --ink-2: #b9c1cf;
+    --muted: #8a94a7;
+    --rule: #253043;
+    --grid: #1b2534;
+    --axis: #3c495d;
+    --dot: #1e2939;
+    --efield: #ff7b47;
+    --bfield: #5e9eff;
+    --matter: #3fd0ae;
+    --photon: #f4bb45;
+    --medium: rgba(110, 170, 255, 0.08);
+    --medium-2: rgba(110, 170, 255, 0.16);
+    --medium-edge: rgba(110, 170, 255, 0.5);
+    --ground: #4d4233;
+    --ground-2: #75644a;
+    --water: #3987e5;
+    --water-fill: rgba(57, 135, 229, 0.2);
+    --veg: #47b862;
+    --veg-fill: rgba(71, 184, 98, 0.18);
+    --nir: #f06ac8;
+    --swir: #a891ff;
+    --tir: #ff6a4a;
+    --mw: #74b6c6;
+    --uv: #a58dff;
+    --s1: #3987e5;
+    --s2: #d95926;
+    --s3: #199e70;
+    --s4: #c98500;
+    --focus: #5e9eff;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0a0f17;
+  --surface: #101722;
+  --ink: #e8ecf3;
+  --ink-2: #b9c1cf;
+  --muted: #8a94a7;
+  --rule: #253043;
+  --grid: #1b2534;
+  --axis: #3c495d;
+  --dot: #1e2939;
+  --efield: #ff7b47;
+  --bfield: #5e9eff;
+  --matter: #3fd0ae;
+  --photon: #f4bb45;
+  --medium: rgba(110, 170, 255, 0.08);
+  --medium-2: rgba(110, 170, 255, 0.16);
+  --medium-edge: rgba(110, 170, 255, 0.5);
+  --ground: #4d4233;
+  --ground-2: #75644a;
+  --water: #3987e5;
+  --water-fill: rgba(57, 135, 229, 0.2);
+  --veg: #47b862;
+  --veg-fill: rgba(71, 184, 98, 0.18);
+  --nir: #f06ac8;
+  --swir: #a891ff;
+  --tir: #ff6a4a;
+  --mw: #74b6c6;
+  --uv: #a58dff;
+  --s1: #3987e5;
+  --s2: #d95926;
+  --s3: #199e70;
+  --s4: #c98500;
+  --focus: #5e9eff;
+  color-scheme: dark;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font: 400 17px/1.8 var(--font-body);
+  -webkit-font-smoothing: antialiased;
+}
+[hidden] { display: none !important; }
+a { color: var(--bfield); text-underline-offset: 3px; }
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; border-radius: 4px; }
+i, .m i { font-family: var(--font-math); font-style: italic; }
+.m { font-family: var(--font-math); font-size: 1.06em; white-space: nowrap; }
+sub, sup { font-size: 0.72em; line-height: 0; }
+b, strong { font-weight: 700; color: var(--ink); }
+
+.progress { position: fixed; top: 0; left: 0; right: 0; z-index: 20; padding-top: env(safe-area-inset-top, 0px); pointer-events: none; }
+.progress .bar {
+  height: 3px; transform-origin: 0 50%; transform: scaleX(0);
+  background: linear-gradient(90deg, #6d28d9, #2f5bff, #04a9d6, #2fb24a, #d8c400, #ff8a00, #e3261b);
+}
+
+.page { max-width: 70rem; margin: 0 auto; padding-inline: 20px; padding-block: 0 5rem; }
+.prose { max-width: 43rem; margin-inline: auto; }
+.prose p { margin: 0 0 1.05em; }
+.prose ul { margin: 0 0 1.2em; padding-left: 1.2em; }
+.prose li { margin: 0 0 0.6em; }
+.prose li::marker { color: var(--muted); }
+
+/* ---------- hero ---------- */
+.hero { padding-block: 4.5rem 1.5rem; }
+.eyebrow { font: 500 13px/1.4 var(--font-mono); letter-spacing: 0.08em; color: var(--muted); margin: 0 0 1rem; }
+.hero h1 {
+  font-family: var(--font-display); font-weight: 900; font-size: clamp(40px, 7vw, 64px); line-height: 1.12;
+  letter-spacing: 0.02em; margin: 0 0 1.4rem; text-wrap: balance;
+}
+.hero h1 .dot { color: var(--efield); }
+.lede { font-size: 19px; line-height: 1.85; color: var(--ink-2); margin: 0 0 1rem; }
+.hint { font-size: 14.5px; color: var(--muted); margin: 0; }
+
+/* ---------- table of contents ---------- */
+.toc { max-width: 66rem; margin: 1.5rem auto 0; }
+.toc h2 { font: 500 13px/1.4 var(--font-mono); letter-spacing: 0.08em; color: var(--muted); margin: 0 0 0.8rem; }
+.toc ol { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 19rem), 1fr)); gap: 0; border-top: 1px solid var(--rule); }
+.toc li { border-bottom: 1px solid var(--rule); min-width: 0; }
+.toc a { display: grid; grid-template-columns: 2.4rem 1fr; gap: 0 0.6rem; padding: 0.75rem 0.5rem 0.75rem 0; color: inherit; text-decoration: none; }
+.toc a:hover .toc-t { color: var(--efield); }
+.toc-n { font: 500 13px/1.9 var(--font-mono); color: var(--muted); }
+.toc-t { font-weight: 700; font-size: 15.5px; line-height: 1.5; }
+.toc-d { grid-column: 2; font-size: 13.5px; line-height: 1.6; color: var(--muted); }
+
+/* ---------- chapters ---------- */
+.chapter { padding-top: 4.5rem; scroll-margin-top: 1rem; }
+.ch-head { margin-bottom: 1.6rem; }
+.ch-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 0.4rem 1rem; margin-bottom: 0.6rem; }
+.ch-no { font: 500 13px/1 var(--font-mono); letter-spacing: 0.1em; color: var(--muted); }
+.band { display: inline-flex; align-items: center; gap: 0.5rem; font: 400 12.5px/1 var(--font-mono); color: var(--muted); }
+.band::before { content: ""; width: 34px; height: 6px; border-radius: 3px; background: var(--sw, var(--muted)); }
+.ch-head h2 { font-family: var(--font-display); font-weight: 900; font-size: clamp(28px, 4.2vw, 38px); line-height: 1.3; margin: 0 0 0.7rem; text-wrap: balance; }
+.ch-q { font-size: 18px; color: var(--ink-2); margin: 0; }
+.ch-q::before { content: "问 "; font-family: var(--font-display); font-weight: 900; color: var(--efield); }
+.key { font-family: var(--font-display); font-weight: 600; font-size: 20px; line-height: 1.75; color: var(--ink); margin: 1.6rem 0 1.2rem !important; text-wrap: pretty; }
+.pts { padding-left: 1.1em; }
+
+.rs { max-width: 43rem; margin: 1.6rem auto; padding: 1rem 1.1rem 0.4rem; border: 1px solid var(--rule); border-radius: 10px; background: var(--surface); }
+.rs-h { display: flex; align-items: center; gap: 0.5rem; font: 500 12.5px/1 var(--font-mono); letter-spacing: 0.08em; color: var(--matter); margin-bottom: 0.7rem; }
+.rs-h svg { width: 16px; height: 16px; }
+.rs p { font-size: 16px; }
+
+details.deep { max-width: 43rem; margin: 1.4rem auto; border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); }
+details.deep summary { cursor: pointer; padding: 0.8rem 0; font-weight: 700; list-style: none; display: flex; gap: 0.6rem; align-items: baseline; }
+details.deep summary::-webkit-details-marker { display: none; }
+details.deep summary::before { content: "+"; font: 500 16px/1 var(--font-mono); color: var(--efield); width: 1rem; }
+details.deep[open] summary::before { content: "−"; }
+details.deep > div { padding: 0 0 0.6rem 1.6rem; font-size: 16px; }
+
+/* ---------- figures ---------- */
+.fig { max-width: 68rem; margin: 2rem auto; background: var(--surface); border: 1px solid var(--rule); border-radius: 12px; overflow: hidden; }
+.fig-head { display: flex; align-items: center; gap: 0.75rem; padding: 0.7rem 1rem; border-bottom: 1px solid var(--rule); }
+.fig-no { font: 500 12px/1 var(--font-mono); letter-spacing: 0.08em; color: var(--muted); white-space: nowrap; }
+.fig-title { flex: 1; min-width: 0; font-weight: 700; font-size: 15px; line-height: 1.45; }
+.play {
+  display: inline-flex; align-items: center; gap: 0.4rem; flex: none;
+  font: 500 13px/1 var(--font-body); color: var(--ink-2); background: transparent;
+  border: 1px solid var(--rule); border-radius: 999px; padding: 0.38rem 0.75rem; cursor: pointer;
+}
+.play:hover { border-color: var(--axis); color: var(--ink); }
+.play svg { width: 12px; height: 12px; fill: currentColor; }
+.play .i-play { display: none; }
+.fig.is-paused .play .i-play { display: block; }
+.fig.is-paused .play .i-pause { display: none; }
+
+.panels { display: grid; grid-template-columns: var(--cols, 1fr); }
+.panel {
+  position: relative; min-width: 0; overflow-x: auto;
+  background-image: radial-gradient(circle, var(--dot) 1px, transparent 1.4px);
+  background-size: 24px 24px; background-position: 12px 12px;
+}
+.panel.span { grid-column: 1 / -1; }
+.panel + .panel { border-left: 1px solid var(--rule); }
+.panel.span + .panel { border-left: 0; border-top: 1px solid var(--rule); }
+.panel svg { display: block; width: 100%; height: auto; touch-action: pan-y; }
+.panel svg.interactive { cursor: crosshair; }
+
+.controls { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 0.9rem 1.8rem; padding: 0.85rem 1rem; border-top: 1px solid var(--rule); }
+.ctl { display: grid; gap: 0.35rem; min-width: 0; }
+.ctl > label, .ctl > .lab { font-size: 13px; line-height: 1.3; color: var(--muted); }
+.ctl-row { display: flex; align-items: center; gap: 0.7rem; }
+.ctl input[type="range"] { width: min(240px, 58vw); accent-color: var(--efield); margin: 0; }
+.ctl output { min-width: 5.5rem; font: 500 13.5px/1.3 var(--font-mono); font-variant-numeric: tabular-nums; color: var(--ink); }
+.seg { display: inline-flex; flex-wrap: wrap; border: 1px solid var(--rule); border-radius: 8px; overflow: hidden; background: var(--bg); }
+.seg button, .chips button, .btn {
+  font: 500 13px/1.2 var(--font-body); color: var(--ink-2); background: transparent; border: 0; padding: 0.45rem 0.7rem; cursor: pointer;
+}
+.seg button + button { border-left: 1px solid var(--rule); }
+.seg button[aria-pressed="true"] { background: var(--ink); color: var(--surface); }
+.seg button:not([aria-pressed="true"]):hover, .chips button:hover, .btn:hover { color: var(--ink); background: var(--medium); }
+.chips { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+.chips button, .btn { border: 1px solid var(--rule); border-radius: 999px; background: var(--surface); }
+.check { display: inline-flex; align-items: center; gap: 0.45rem; font-size: 13.5px; color: var(--ink-2); cursor: pointer; }
+.check input { accent-color: var(--efield); width: 15px; height: 15px; margin: 0; }
+
+.readouts { display: flex; flex-wrap: wrap; margin: 0 0 -1px; border-top: 1px solid var(--rule); }
+.readouts > div { flex: 1 1 9.5rem; padding: 0.6rem 1rem; min-width: 0; box-shadow: inset -1px 0 0 var(--rule), inset 0 -1px 0 var(--rule); }
+.readouts dt { font-size: 12px; line-height: 1.4; color: var(--muted); }
+.readouts dd { margin: 0.15rem 0 0; font: 500 15px/1.4 var(--font-mono); font-variant-numeric: tabular-nums; color: var(--ink); overflow-wrap: anywhere; }
+.readouts dd.txt { font: 500 13.5px/1.5 var(--font-body); }
+.readouts > div.wide { flex: 2 1 19rem; }
+
+.fig figcaption { padding: 0.8rem 1rem 1rem; font-size: 14.5px; line-height: 1.75; color: var(--ink-2); border-top: 1px solid var(--rule); }
+.fig figcaption b { color: var(--ink); }
+
+.tbl-wrap { overflow-x: auto; border-top: 1px solid var(--rule); }
+table.data { width: 100%; border-collapse: collapse; font-size: 14px; }
+table.data th, table.data td { padding: 0.5rem 0.9rem; text-align: right; border-bottom: 1px solid var(--rule); white-space: nowrap; }
+table.data th:first-child, table.data td:first-child { text-align: left; }
+table.data thead th { font-weight: 500; font-size: 12.5px; color: var(--muted); }
+table.data td { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+table.data td:first-child { font-family: var(--font-body); font-weight: 700; }
+table.data tr:last-child td { border-bottom: 0; }
+.key-sw { display: inline-block; width: 14px; height: 3px; border-radius: 2px; vertical-align: middle; margin-right: 0.45rem; }
+
+table.summary { width: 100%; border-collapse: collapse; font-size: 15px; line-height: 1.6; }
+table.summary th, table.summary td { text-align: left; vertical-align: top; padding: 0.7rem 0.9rem; border-bottom: 1px solid var(--rule); }
+table.summary thead th { font: 500 12.5px/1.4 var(--font-mono); letter-spacing: 0.06em; color: var(--muted); }
+table.summary td:first-child { font-weight: 700; white-space: nowrap; }
+.sum-wrap { max-width: 68rem; margin: 2rem auto; overflow-x: auto; background: var(--surface); border: 1px solid var(--rule); border-radius: 12px; }
+table.summary { min-width: 44rem; }
+
+.tip {
+  position: absolute; z-index: 5; pointer-events: none; min-width: 9rem; max-width: 16rem;
+  padding: 0.5rem 0.65rem; border-radius: 8px; border: 1px solid var(--rule);
+  background: var(--surface); box-shadow: 0 6px 20px rgba(10, 15, 25, 0.16);
+  font-size: 12.5px; line-height: 1.5; color: var(--ink-2);
+}
+.tip .tip-h { font-weight: 700; color: var(--ink); margin-bottom: 0.2rem; }
+.tip .row { display: flex; align-items: center; gap: 0.45rem; }
+.tip .row .v { font: 600 13px/1.5 var(--font-mono); color: var(--ink); font-variant-numeric: tabular-nums; }
+.tip .row .k { width: 12px; height: 3px; border-radius: 2px; flex: none; }
+
+footer.refs { max-width: 43rem; margin: 4rem auto 0; padding-top: 1.5rem; border-top: 1px solid var(--rule); font-size: 14.5px; color: var(--ink-2); }
+footer.refs h2 { font: 500 13px/1.4 var(--font-mono); letter-spacing: 0.08em; color: var(--muted); margin: 0 0 0.8rem; }
+footer.refs ol { padding-left: 1.2em; margin: 0 0 1rem; }
+footer.refs li { margin-bottom: 0.4rem; }
+
+/* ---------- SVG vocabulary ---------- */
+svg text { font-family: var(--font-body); }
+.t { fill: var(--ink-2); font-size: 14px; }
+.t-s { fill: var(--muted); font-size: 12.5px; }
+.t-b { fill: var(--ink); font-size: 15px; font-weight: 700; }
+.t-h { fill: var(--ink); font-size: 16px; font-weight: 700; }
+.t-m { fill: var(--ink); font-family: var(--font-math); font-style: italic; font-size: 17px; }
+.t-mono { fill: var(--ink-2); font-family: var(--font-mono); font-size: 12.5px; }
+.t-e { fill: var(--efield); } .t-bf { fill: var(--bfield); } .t-mat { fill: var(--matter); } .t-pho { fill: var(--photon); }
+.t-mut { fill: var(--muted); }
+.halo { paint-order: stroke; stroke: var(--surface); stroke-width: 4px; stroke-linejoin: round; }
+.mid { text-anchor: middle; } .end { text-anchor: end; }
+.ln { fill: none; stroke-linecap: round; stroke-linejoin: round; }
+.s-e { stroke: var(--efield); } .s-b { stroke: var(--bfield); } .s-m { stroke: var(--matter); } .s-p { stroke: var(--photon); }
+.s-ink { stroke: var(--ink); } .s-ink2 { stroke: var(--ink-2); } .s-mut { stroke: var(--muted); } .s-rule { stroke: var(--rule); }
+.s-axis { stroke: var(--axis); } .s-grid { stroke: var(--grid); } .s-water { stroke: var(--water); } .s-veg { stroke: var(--veg); }
+.f-e { fill: var(--efield); } .f-b { fill: var(--bfield); } .f-m { fill: var(--matter); } .f-p { fill: var(--photon); }
+.f-ink { fill: var(--ink); } .f-ink2 { fill: var(--ink-2); } .f-mut { fill: var(--muted); } .f-surf { fill: var(--surface); } .f-bg { fill: var(--bg); }
+.f-med { fill: var(--medium); } .f-med2 { fill: var(--medium-2); } .s-med { stroke: var(--medium-edge); }
+.f-ground { fill: var(--ground); } .f-ground2 { fill: var(--ground-2); } .f-water { fill: var(--water-fill); } .f-veg { fill: var(--veg-fill); }
+.f-none { fill: none; }
+.sc-e { stop-color: var(--efield); } .sc-m { stop-color: var(--matter); } .sc-p { stop-color: var(--photon); } .sc-b { stop-color: var(--bfield); } .sc-surf { stop-color: var(--surface); }
+.arr line { stroke: var(--c, var(--ink)); stroke-linecap: round; }
+.arr polygon { fill: var(--c, var(--ink)); }
+
+@media (max-width: 760px) {
+  body { font-size: 16.5px; }
+  .panels { grid-template-columns: 1fr !important; }
+  .panel + .panel { border-left: 0; border-top: 1px solid var(--rule); }
+  .panel svg.wide { min-width: 620px; }
+  .panel svg.mid-w { min-width: 470px; }
+  .hero { padding-block: 3rem 1rem; }
+  .lede { font-size: 17.5px; }
+  .key { font-size: 18.5px; }
+}
+</style>
+
+<div class="progress" aria-hidden="true"><div class="bar" id="progress-bar"></div></div>
+
+<main class="page">
+
+<header class="hero prose">
+  <p class="eyebrow">动画笔记 · 电磁学 × 量子力学 × 遥感</p>
+  <h1>光、物质<span class="dot">与</span>遥感</h1>
+  <p class="lede">课本说：光照到镜面会“反射”，进入水中会“折射”。可是到了原子尺度，既没有一个光滑的面让光去反弹，也没有谁规定光要拐多少度。真正发生的是：<strong>光的电场摇动了物质中的电子，被摇动的电子又发出新的光，无数新光彼此叠加，才“看起来”像反射和折射。</strong>卫星图像上每个像素的数值，就是这段微观历史在一大片地面上的总和。</p>
+  <p class="hint">每张图都可以交互：拖动滑块、切换选项，或用右上角按钮暂停。图中的物理量按标准公式实时计算；为了看得见而夸张的地方，会在图注里说明。</p>
+</header>
+
+<figure class="fig" id="fig-hero">
+  <div class="fig-head">
+    <span class="fig-no">开场</span>
+    <span class="fig-title">从一个像素一路放大到一个电子</span>
+    <button class="play" type="button" aria-pressed="true"><svg class="i-pause" viewBox="0 0 12 12" aria-hidden="true"><rect x="2" y="1" width="3" height="10" rx="1"/><rect x="7" y="1" width="3" height="10" rx="1"/></svg><svg class="i-play" viewBox="0 0 12 12" aria-hidden="true"><path d="M3 1.5v9l7.5-4.5z"/></svg><span class="lbl">暂停</span></button>
+  </div>
+  <div class="panels">
+    <div class="panel"><svg id="hero-svg" class="wide" viewBox="0 0 960 400" role="img" aria-label="动画：从卫星观测的一个 10 米像素，逐级放大到叶片截面、叶绿素分子和被光电场驱动振动的电子。"></svg></div>
+  </div>
+  <figcaption>遥感影像中一个 10 m 像素的亮度，取决于叶片内部的折射与散射、色素分子对光子的吸收，归根结底取决于电子如何响应光的电场。下面十章沿着这条链条一步步往回走，最后再回到卫星。</figcaption>
+</figure>
+
+<nav class="toc" aria-labelledby="toc-h">
+  <h2 id="toc-h">阅读路线</h2>
+  <ol>
+    <li><a href="#ch1"><span class="toc-n">01</span><span class="toc-t">光是什么：自己推着自己走的电磁波</span><span class="toc-d">电场、磁场、光子能量与波段</span></a></li>
+    <li><a href="#ch2"><span class="toc-n">02</span><span class="toc-t">电子被摇动：每个原子都是一根小天线</span><span class="toc-d">洛伦兹振子、共振、色散与吸收</span></a></li>
+    <li><a href="#ch3"><span class="toc-n">03</span><span class="toc-t">折射：光并没有真的“变慢”</span><span class="toc-d">次级波叠加、消光定理、斯涅尔定律</span></a></li>
+    <li><a href="#ch4"><span class="toc-n">04</span><span class="toc-t">反射：入射角为什么等于反射角</span><span class="toc-d">原子子波、衍射、布儒斯特角与偏振</span></a></li>
+    <li><a href="#ch5"><span class="toc-n">05</span><span class="toc-t">量子视角：光子走遍所有路径</span><span class="toc-d">费曼的小箭头、薄膜干涉、InSAR</span></a></li>
+    <li><a href="#ch6"><span class="toc-n">06</span><span class="toc-t">光滑还是粗糙？取决于波长</span><span class="toc-d">瑞利判据、镜面与漫反射、布拉格散射</span></a></li>
+    <li><a href="#ch7"><span class="toc-n">07</span><span class="toc-t">进入物质内部：吸收与体散射</span><span class="toc-d">叶片中的光子、地物光谱、假彩色</span></a></li>
+    <li><a href="#ch8"><span class="toc-n">08</span><span class="toc-t">物体自己也在发光</span><span class="toc-d">分子振动、普朗克定律、大气窗口</span></a></li>
+    <li><a href="#ch9"><span class="toc-n">09</span><span class="toc-t">微波的世界</span><span class="toc-d">水分子取向、土壤水分、合成孔径雷达</span></a></li>
+    <li><a href="#ch10"><span class="toc-n">10</span><span class="toc-t">全链条：一个像素是怎样形成的</span><span class="toc-d">程辐射、大气校正与总结</span></a></li>
+  </ol>
+</nav>
+
+<!-- ======================================================= 01 -->
+<section class="chapter" id="ch1">
+  <header class="ch-head prose">
+    <div class="ch-meta"><span class="ch-no">第 01 章</span><span class="band" style="--sw: linear-gradient(90deg, #6d28d9, #2f5bff, #2fb24a, #d8c400, #e3261b, #8a8f99)">涉及波段：紫外 → 微波</span></div>
+    <h2>光是什么：自己推着自己走的电磁波</h2>
+    <p class="ch-q">光在真空中凭什么传播？电场和磁场各自扮演什么角色？</p>
+  </header>
+
+  <figure class="fig" id="fig-em">
+    <div class="fig-head">
+      <span class="fig-no">图 1</span>
+      <span class="fig-title">电磁波：E 与 B 互相垂直、同步振荡，能流始终向前</span>
+      <button class="play" type="button" aria-pressed="true"><svg class="i-pause" viewBox="0 0 12 12" aria-hidden="true"><rect x="2" y="1" width="3" height="10" rx="1"/><rect x="7" y="1" width="3" height="10" rx="1"/></svg><svg class="i-play" viewBox="0 0 12 12" aria-hidden="true"><path d="M3 1.5v9l7.5-4.5z"/></svg><span class="lbl">暂停</span></button>
+    </div>
+    <div class="panels">
+      <div class="panel"><svg id="em-svg" class="wide" viewBox="0 0 960 330" role="img" aria-label="三维示意的电磁波：电场在竖直平面内振荡，磁场在与之垂直的平面内同相振荡，二者共同沿 z 方向传播，能流始终向前。"></svg></div>
+      <div class="panel span"><svg id="em-spec" class="wide" viewBox="0 0 960 224" role="img" aria-label="对数坐标的电磁波谱：标出光子能量、各波段名称、对应的物质过程与典型遥感传感器，竖线为当前选择的波长。"></svg></div>
+    </div>
+    <div class="controls">
+      <div class="ctl">
+        <label for="em-lam">波长 λ（对数刻度）</label>
+        <div class="ctl-row"><input type="range" id="em-lam" min="0" max="1000" step="1" value="106"><output id="em-lam-o" for="em-lam">550 nm</output></div>
+      </div>
+      <div class="ctl">
+        <span class="lab" id="em-pre-l">跳到</span>
+        <div class="chips" id="em-pre" role="group" aria-labelledby="em-pre-l">
+          <button type="button" data-v="4.5e-7">蓝光 450 nm</button>
+          <button type="button" data-v="8.5e-7">近红外 850 nm</button>
+          <button type="button" data-v="1.1e-5">热红外 11 µm</button>
+          <button type="button" data-v="0.0555">C 波段 5.6 cm</button>
+          <button type="button" data-v="0.21">L 波段 21 cm</button>
+        </div>
+      </div>
+    </div>
+    <dl class="readouts">
+      <div><dt>频率 ν = c/λ</dt><dd id="em-nu">—</dd></div>
+      <div><dt>光子能量 hν</dt><dd id="em-ev">—</dd></div>
+      <div><dt>hν ÷ 室温热能 kT</dt><dd id="em-kt">—</dd></div>
+      <div><dt>尺度参照</dt><dd class="txt" id="em-size">—</dd></div>
+      <div class="wide"><dt>能“对上”的物质过程</dt><dd class="txt" id="em-proc">—</dd></div>
+      <div class="wide"><dt>典型遥感用途</dt><dd class="txt" id="em-app">—</dd></div>
+    </dl>
+    <figcaption>电场 <b>E</b>（橙）与磁场 <b>B</b>（蓝）互相垂直、同相振荡，共同沿 <i>z</i> 方向前进；轴上的金色圆点表示能流密度 <span class="m"><b>S</b> = <b>E</b>×<b>B</b>/<i>μ</i><sub>0</sub></span>，它永远指向前方。B 按 <i>c</i>·B 的比例绘制，否则在国际单位制里它会小 3 亿倍。下方谱带用对数坐标排开 7 个数量级的波长，标出光子能量和它们能“对上”的物质过程。</figcaption>
+  </figure>
+
+  <div class="prose">
+    <p class="key">变化的电场产生磁场，变化的磁场又产生电场。光就是这样一列不需要介质、自己维持自己的波，速度 <span class="m"><i>c</i> = 1/√(<i>ε</i><sub>0</sub><i>μ</i><sub>0</sub>)</span>。</p>
+    <p>光与物质打交道时，真正“动手”的几乎总是电场。电子受到的磁力 <span class="m"><i>evB</i></span> 与电力 <span class="m"><i>eE</i></span> 之比约为 <span class="m"><i>v</i>/<i>c</i></span>；原子中的电子被光驱动时，振动速度远小于光速，所以在反射、折射这类过程中，磁力通常可以忽略。</p>
+    <p>但磁场并不是旁观者。它和电场一起决定能量往哪里流（坡印廷矢量），让光携带动量（光压）；在折射率为 <i>n</i> 的介质中，B 与 E 的比值从 1/<i>c</i> 变成 <i>n</i>/<i>c</i>，菲涅尔反射公式中的 <i>n</i> 有一部分正是经由这个比值进来的。第 8 章还会看到，氧分子的一些吸收线干脆就是由光的磁场驱动的。</p>
+    <p>量子力学补上了最后一块：光在被探测时，能量总是一份一份地交付，每份 <span class="m"><i>E</i> = <i>hν</i></span>。可见光光子约 1.8–3 eV，和原子、分子中电子能级的间距相当；热红外光子约 0.1 eV，对应分子振动；微波光子只有约 10<sup>−5</sup> eV，只能拨动分子的转动与自由电荷。<strong>不同波段“看见”不同的东西，根源就在这里。</strong></p>
+  </div>
+  <details class="deep">
+    <summary>深入一层：从麦克斯韦方程到光</summary>
+    <div>
+      <p>真空中，<span class="m">∇×<b>E</b> = −∂<b>B</b>/∂<i>t</i></span>，<span class="m">∇×<b>B</b> = <i>μ</i><sub>0</sub><i>ε</i><sub>0</sub> ∂<b>E</b>/∂<i>t</i></span>。对第一式再取一次旋度并代入第二式，得到 <span class="m">∇²<b>E</b> = <i>μ</i><sub>0</sub><i>ε</i><sub>0</sub> ∂²<b>E</b>/∂<i>t</i>²</span>，这是波速为 <span class="m">1/√(<i>μ</i><sub>0</sub><i>ε</i><sub>0</sub>)</span> 的波动方程，而这个数值与实测光速吻合。麦克斯韦在 1865 年据此断言：光是电磁波。</p>
+      <p>平面波中 <span class="m">|<b>B</b>| = |<b>E</b>|/<i>c</i></span>，电场与磁场的能量密度相等：<span class="m"><i>ε</i><sub>0</sub><i>E</i>²/2 = <i>B</i>²/2<i>μ</i><sub>0</sub></span>。电子在 E 驱动下振动时还受到 <span class="m"><i>q</i><b>v</b>×<b>B</b></span> 力，它沿传播方向来回变化，时间平均后指向前方，大小等于电子吸收或散射的功率除以 <i>c</i>。这就是光压的微观来源；对应的量子说法是光子携带动量 <span class="m"><i>p</i> = <i>h</i>/<i>λ</i></span>。</p>
+      <p>为什么光学里几乎不谈磁导率？在 10<sup>14</sup>–10<sup>15</sup> Hz 的光频下，天然材料中原子磁矩的取向跟不上，<span class="m"><i>μ</i><sub>r</sub> ≈ 1</span>，描述透明材料只需要一个 <span class="m"><i>n</i> = √<i>ε</i><sub>r</sub></span>。超材料用人工结构让磁响应也参与进来，才实现了负折射。</p>
+    </div>
+  </details>
+</section>
+
+<!-- ======================================================= 02 -->
+<section class="chapter" id="ch2">
+  <header class="ch-head prose">
+    <div class="ch-meta"><span class="ch-no">第 02 章</span><span class="band" style="--sw: linear-gradient(90deg, #6b4fd8, #2f5bff, #2fb24a, #e3261b)">涉及波段：紫外 · 可见光 · 红外</span></div>
+    <h2>电子被摇动：每个原子都是一根小天线</h2>
+    <p class="ch-q">光进入物质时，物质里到底是什么在动？</p>
+  </header>
+
+  <figure class="fig" id="fig-osc">
+    <div class="fig-head">
+      <span class="fig-no">图 2</span>
+      <span class="fig-title">洛伦兹振子：被光驱动的电子云，以及它决定的折射率</span>
+      <button class="play" type="button" aria-pressed="true"><svg class="i-pause" viewBox="0 0 12 12" aria-hidden="true"><rect x="2" y="1" width="3" height="10" rx="1"/><rect x="7" y="1" width="3" height="10" rx="1"/></svg><svg class="i-play" viewBox="0 0 12 12" aria-hidden="true"><path d="M3 1.5v9l7.5-4.5z"/></svg><span class="lbl">暂停</span></button>
+    </div>
+    <div class="panels" style="--cols: 5fr 3fr">
+      <div class="panel"><svg id="osc-svg" class="mid-w" viewBox="0 0 600 430" role="img" aria-label="一个原子：电子云在入射光电场驱动下上下振动，形成振荡偶极子，向水平方向辐射最强、竖直方向不辐射；下方波形比较电场与偶极矩的相位差。"></svg></div>
+      <div class="panel"><svg id="osc-chart" class="interactive" viewBox="0 0 360 430" role="img" aria-label="洛伦兹模型的折射率 n 与消光系数 κ 随驱动频率的变化，共振附近吸收最强，共振上方存在介电常数为负的强反射带。"></svg></div>
+    </div>
+    <div class="controls">
+      <div class="ctl">
+        <label for="osc-w">驱动频率 ω / 共振频率 ω₀</label>
+        <div class="ctl-row"><input type="range" id="osc-w" min="0.1" max="2.5" step="0.01" value="0.45"><output id="osc-w-o" for="osc-w">0.45</output></div>
+      </div>
+      <div class="ctl">
+        <span class="lab" id="osc-pre-l">典型情形</span>
+        <div class="chips" id="osc-pre" role="group" aria-labelledby="osc-pre-l">
+          <button type="button" data-v="0.2">可见光照射玻璃</button>
+          <button type="button" data-v="1">恰好共振</button>
+          <button type="button" data-v="1.25">剩余射线带</button>
+          <button type="button" data-v="2.5">远高于共振（X 射线）</button>
+        </div>
+      </div>
+    </div>
+    <dl class="readouts">
+      <div><dt>偶极矩相位落后 φ</dt><dd id="osc-phi">—</dd></div>
+      <div><dt>振幅（相对静电场下）</dt><dd id="osc-amp">—</dd></div>
+      <div><dt>辐射强度 ∝ ω⁴|x|²（相对 ω=0.5ω₀）</dt><dd id="osc-rad">—</dd></div>
+      <div><dt>折射率 n</dt><dd id="osc-n">—</dd></div>
+      <div><dt>消光系数 κ</dt><dd id="osc-k">—</dd></div>
+      <div class="wide"><dt>这意味着</dt><dd class="txt" id="osc-say">—</dd></div>
+    </dl>
+    <figcaption>左：把原子看作“原子核 + 弹簧上的电子云”。光的电场推动电子云振动，形成振荡的电偶极子 <b>p</b>，它像天线一样向四周辐射新的电磁波：沿振动方向（上下）不辐射，垂直方向（左右）最强，强度 <span class="m">∝ sin²<i>θ</i></span>。下方波形比较驱动电场 E(t) 与偶极矩 p(t) 的相位。电子带负电，所以电子云的位移与 <b>p</b> 方向相反。右：同一个模型给出的折射率 <i>n</i> 与消光系数 <i>κ</i>（参数：<span class="m"><i>ω</i><sub>p</sub>² = 1.25<i>ω</i><sub>0</sub>², <i>γ</i> = 0.15<i>ω</i><sub>0</sub></span>）；在图表上点击或拖动可以改变驱动频率。</figcaption>
+  </figure>
+
+  <div class="prose">
+    <p class="key">低于共振频率时，电子“跟得上”，与电场同步振动：物质透明，并产生折射。恰好共振时，电子振幅最大、相位落后 90°，从光中持续吸收能量。远高于共振时，电子来不及响应，反相振动，折射率甚至小于 1。</p>
+    <ul class="pts">
+      <li><b>玻璃为什么透明？</b>玻璃中电子的共振在紫外（约 0.1 µm）。可见光的频率只有共振频率的 15%–25%，正处在“跟得上”的区间，所以不吸收、只折射；越接近共振，<i>n</i> 越大，于是蓝光比红光折射得更厉害：这就是色散与彩虹。</li>
+      <li><b>天空为什么是蓝的？</b>远低于共振时，偶极子的辐射强度 <span class="m">∝ <i>ω</i><sup>4</sup></span>。空气分子散射蓝光（450 nm）的能力约是红光（700 nm）的 6 倍，这就是瑞利散射。遥感影像中的“大气程辐射”主要来自它，所以蓝波段最依赖大气校正。</li>
+      <li><b>剩余射线带：</b>在共振频率上方的一段区间里 <span class="m"><i>ε</i>′ &lt; 0</span>（右图阴影），介质像金属一样强烈反射。石英的晶格振动共振在 9 µm 附近，于是富含石英的岩石在 8–10 µm 反射率高、发射率低。ASTER 的 5 个热红外波段正是靠这个“发射率凹槽”识别岩性。</li>
+    </ul>
+  </div>
+  <details class="deep">
+    <summary>深入一层：量子力学里的“弹簧”</summary>
+    <div>
+      <p>经典模型里的弹簧，在量子力学中换成了能级差：<span class="m"><i>ω</i><sub>0</sub> = (<i>E</i><sub>2</sub> − <i>E</i><sub>1</sub>)/ħ</span>。远离共振时，光只让原子短暂地混入一点激发态成分，即“虚跃迁”，并立即以同样的频率、确定的相位把能量还给光场。这个过程是<b>相干</b>的，所以折射光仍然方向整齐、颜色不变。</p>
+      <p>恰好共振时，电子真正跃迁到激发态（实跃迁）：光子被吸收，能量随后变成热、化学能，或以荧光形式重新发射。叶绿素吸收红光后，会在 685 nm 和 740 nm 附近发出微弱的荧光，即日光诱导叶绿素荧光（SIF）。GOME-2、OCO-2、TROPOMI 等卫星光谱仪已经能从太阳光谱的暗线中把它分离出来，用来直接监测光合作用；ESA 的 FLEX 任务专为此设计。</p>
+      <p>经典振子之所以好用，是因为量子力学算出的极化率与它形式相同，只是每个跃迁多了一个“振子强度”权重：<span class="m"><i>α</i>(<i>ω</i>) ∝ Σ<sub><i>k</i></sub> <i>f<sub>k</sub></i> / (<i>ω<sub>k</sub></i>² − <i>ω</i>² − <i>iγ<sub>k</sub>ω</i>)</span>。</p>
+    </div>
+  </details>
+</section>
+
+<!-- ======================================================= 03 -->
+<section class="chapter" id="ch3">
+  <header class="ch-head prose">
+    <div class="ch-meta"><span class="ch-no">第 03 章</span><span class="band" style="--sw: linear-gradient(90deg, #2f5bff, #2fb24a, #d8c400, #e3261b)">涉及波段：可见光</span></div>
+    <h2>折射：光并没有真的“变慢”</h2>
+    <p class="ch-q">光在玻璃中的速度是 <i>c</i>/<i>n</i>。可在原子之间的真空里，电磁场不是一直以 <i>c</i> 传播吗？</p>
+  </header>
+
+  <figure class="fig" id="fig-slab">
+    <div class="fig-head">
+      <span class="fig-no">图 3</span>
+      <span class="fig-title">次级波叠加：一层层原子让相位一点点落后</span>
+      <button class="play" type="button" aria-pressed="true"><svg class="i-pause" viewBox="0 0 12 12" aria-hidden="true"><rect x="2" y="1" width="3" height="10" rx="1"/><rect x="7" y="1" width="3" height="10" rx="1"/></svg><svg class="i-play" viewBox="0 0 12 12" aria-hidden="true"><path d="M3 1.5v9l7.5-4.5z"/></svg><span class="lbl">暂停</span></button>
+    </div>
+    <div class="panels" style="--cols: 1fr 1fr">
+      <div class="panel span"><svg id="slab-svg" class="wide" viewBox="0 0 960 250" role="img" aria-label="光波穿过玻璃板：玻璃内的实际波峰逐渐落后于假想的真空参考波峰，离开玻璃后保持固定的相位落后。"></svg></div>
+      <div class="panel"><svg id="slab-phasor" viewBox="0 0 470 280" role="img" aria-label="相量图：每层原子贡献一个与总场垂直、落后 90 度的小箭头，累加后总箭头沿圆周后退，振幅不变而相位持续落后。"></svg></div>
+      <div class="panel"><svg id="slab-layer" viewBox="0 0 470 280" role="img" aria-label="一层原子的作用分解：入射波，加上落后四分之一周期的微弱辐射波，得到相位略微落后的合成波。"></svg></div>
+    </div>
+    <div class="controls">
+      <div class="ctl">
+        <label for="slab-n">玻璃的折射率 n</label>
+        <div class="ctl-row"><input type="range" id="slab-n" min="1" max="2.4" step="0.01" value="1.5"><output id="slab-n-o" for="slab-n">1.50</output></div>
+      </div>
+    </div>
+    <dl class="readouts">
+      <div><dt>玻璃中的波长 λ₀/n</dt><dd id="slab-lam">—</dd></div>
+      <div><dt>出射时相位落后</dt><dd id="slab-lag">—</dd></div>
+      <div><dt>等效于落后的波长数</dt><dd id="slab-cyc">—</dd></div>
+      <div class="wide"><dt>真实尺度</dt><dd class="txt">每层原子（约 0.3 nm）只让 500 nm 的光落后约 0.1°，需要上千层才累积出可观的相位差；左下图把每层的效果放大了几十倍。</dd></div>
+    </dl>
+    <figcaption>上：虚线是“假如没有玻璃”的参考波，实线是实际的波。进入玻璃后，实际波峰（实心点）逐渐落后于参考波峰（空心点）；离开玻璃后速度复原，但保留一个固定的相位落后。图中忽略了表面反射。左下：每层原子的辐射（绿色小箭头）都比当地的场落后 90°，把它们一层层加到总场（橙色箭头）上，箭头尖端沿圆周后退：振幅不变，相位持续落后。右下：把一层原子的作用拆开来看。</figcaption>
+  </figure>
+
+  <div class="prose">
+    <p class="key">在原子之间的真空里，电磁场永远以 <i>c</i> 传播。所谓“变慢”，是入射波与所有电子发出的次级波叠加的结果：每一层电子都让总波的相位落后一点，连续累积的相位落后，正等价于一列以 <i>c</i>/<i>n</i> 前进的新波。</p>
+    <p>为什么次级波恰好落后 90°？一大片同步振动的偶极子在远处产生的场，正比于电荷的<em>速度</em>而不是位移；速度比位移超前 90°，辐射公式里还带一个负号，合起来就是落后 90°。把一个落后 90° 的小量加到大波上，效果近似于让大波整体转过一个小角度：只改相位，不改振幅。《费曼物理学讲义》第一卷第 31 章给出了完整推导。</p>
+    <p>更严格的结论叫 <b>Ewald–Oseen 消光定理</b>：在介质内部的每一点，所有偶极子的辐射中都有一部分与入射的真空波精确抵消，剩下的部分组成以 <i>c</i>/<i>n</i> 传播的新波。也就是说，以 <i>c</i> 传播的入射波在介质里被完全“替换”了，我们测到的只有那列新波。</p>
+    <p><b>一个常见的误解</b>是“光子被原子吸收，停留一会儿再发射出来，所以变慢了”。如果真是这样，再次发射的方向和时刻都是随机的，透过玻璃看到的景象会一片模糊。实际过程是第 2 章说的相干虚跃迁，不存在“停留”。在量子场论的语言里，介质中传播的激发是光子与物质极化的混合体，叫做极化激元（polariton）。</p>
+  </div>
+
+  <figure class="fig" id="fig-snell">
+    <div class="fig-head">
+      <span class="fig-no">图 4</span>
+      <span class="fig-title">斯涅尔定律：界面两侧的波前必须对齐</span>
+      <button class="play" type="button" aria-pressed="true"><svg class="i-pause" viewBox="0 0 12 12" aria-hidden="true"><rect x="2" y="1" width="3" height="10" rx="1"/><rect x="7" y="1" width="3" height="10" rx="1"/></svg><svg class="i-play" viewBox="0 0 12 12" aria-hidden="true"><path d="M3 1.5v9l7.5-4.5z"/></svg><span class="lbl">暂停</span></button>
+    </div>
+    <div class="panels">
+      <div class="panel"><svg id="snell-svg" class="wide" viewBox="0 0 960 470" role="img" aria-label="平面波在两种介质界面上的反射与折射：入射、反射、折射三组波峰在界面上的落点完全重合；超过临界角时折射波消失，只剩倏逝波。"></svg></div>
+    </div>
+    <div class="controls">
+      <div class="ctl">
+        <label for="snell-th">入射角 θ₁</label>
+        <div class="ctl-row"><input type="range" id="snell-th" min="0" max="85" step="0.5" value="40"><output id="snell-th-o" for="snell-th">40°</output></div>
+      </div>
+      <div class="ctl">
+        <span class="lab" id="snell-med-l">界面</span>
+        <div class="seg" id="snell-med" role="group" aria-labelledby="snell-med-l">
+          <button type="button" data-v="1,1.333" aria-pressed="true">空气 → 水</button>
+          <button type="button" data-v="1,1.5" aria-pressed="false">空气 → 玻璃</button>
+          <button type="button" data-v="1,2.42" aria-pressed="false">空气 → 钻石</button>
+          <button type="button" data-v="1.333,1" aria-pressed="false">水 → 空气</button>
+          <button type="button" data-v="1.5,1" aria-pressed="false">玻璃 → 空气</button>
+        </div>
+      </div>
+      <div class="ctl">
+        <span class="lab" id="snell-pol-l">偏振</span>
+        <div class="seg" id="snell-pol" role="group" aria-labelledby="snell-pol-l">
+          <button type="button" data-v="s" aria-pressed="true">s（垂直入射面）</button>
+          <button type="button" data-v="p" aria-pressed="false">p（在入射面内）</button>
+        </div>
+      </div>
+    </div>
+    <dl class="readouts">
+      <div><dt>折射角 θ₂</dt><dd id="snell-th2">—</dd></div>
+      <div><dt>反射率 R</dt><dd id="snell-R">—</dd></div>
+      <div><dt>透射率 T = 1 − R</dt><dd id="snell-T">—</dd></div>
+      <div><dt>临界角 θc</dt><dd id="snell-thc">—</dd></div>
+      <div><dt>布儒斯特角 θB</dt><dd id="snell-thb">—</dd></div>
+    </dl>
+    <figcaption>橙色线是波峰，线越淡表示振幅越小。入射波与折射波的波峰在界面上的落点（金色点）完全重合；反射波落点的间距也一样，只是从光疏介质射向光密介质时整体错开半个间距（180° 的相位突变，即“半波损失”）。边界条件要求的正是这个间距处处相同。介质 2 中波长变为 <span class="m"><i>λ</i><sub>0</sub>/<i>n</i><sub>2</sub></span>，要在界面上留下同样的间距 Λ，波前只能转向：<span class="m">Λ = <i>λ</i><sub>1</sub>/sin<i>θ</i><sub>1</sub> = <i>λ</i><sub>2</sub>/sin<i>θ</i><sub>2</sub></span>，即 <span class="m"><i>n</i><sub>1</sub>sin<i>θ</i><sub>1</sub> = <i>n</i><sub>2</sub>sin<i>θ</i><sub>2</sub></span>。试试“水 → 空气”，并把入射角调过 48.6°。</figcaption>
+  </figure>
+
+  <div class="prose">
+    <ul class="pts">
+      <li><b>全反射与倏逝波：</b>从光密介质射向光疏介质、入射角超过临界角 <span class="m"><i>θ</i><sub>c</sub> = arcsin(<i>n</i><sub>2</sub>/<i>n</i><sub>1</sub>)</span> 时，没有折射波。但界面另一侧仍有一层沿界面传播、离开界面就指数衰减的“倏逝波”，深度在波长量级。如果另一块介质靠近到这个距离以内，光可以“隧穿”过去（受抑全反射），它和量子隧穿服从同一类方程。光纤靠全反射把光锁在纤芯里，光纤耦合器和棱镜耦合器则利用倏逝波“隧穿”到相邻的介质中。</li>
+      <li><b>反射了多少？</b>由菲涅尔方程给出。正入射时 <span class="m"><i>R</i> = ((<i>n</i><sub>1</sub>−<i>n</i><sub>2</sub>)/(<i>n</i><sub>1</sub>+<i>n</i><sub>2</sub>))²</span>：水约 2%，玻璃约 4%，钻石约 17%。</li>
+    </ul>
+  </div>
+  <aside class="rs">
+    <div class="rs-h"><svg viewBox="0 0 16 16" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="1.4"><rect x="5.5" y="5.5" width="5" height="5" rx="1"/><path d="M1 3.5h4M11 12.5h4M3 1.5v4M13 10.5v4"/></g></svg>遥感中的体现</div>
+    <p><b>斯涅尔窗。</b>从水下往上看，整个天空被压缩进一个约 97° 的圆锥；反过来，水体内部向上传播的光，只有落在这个圆锥里的部分能离开水面，其余被全反射回水中；而且（不计反射损失时）辐亮度穿过界面时保持 <span class="m"><i>L</i>/<i>n</i>²</span> 不变，进入水中的辐亮度会增大到约 <span class="m"><i>n</i>²</span> 倍。这些都是海洋水色遥感计算“离水辐亮度”时的基本边界条件。</p>
+    <p><b>大气也在折射。</b>空气的折射率随高度递减，斜穿大气的电波会弯曲。GNSS 无线电掩星（如 COSMIC-2）测量卫星信号穿过大气边缘时的弯曲角，反演出大气的温度与湿度廓线。</p>
+  </aside>
+</section>
+
+<!-- ======================================================= 04 -->
+<section class="chapter" id="ch4">
+  <header class="ch-head prose">
+    <div class="ch-meta"><span class="ch-no">第 04 章</span><span class="band" style="--sw: linear-gradient(90deg, #2f5bff, #2fb24a, #d8c400, #e3261b)">涉及波段：可见光（以及 X 射线）</span></div>
+    <h2>反射：入射角为什么等于反射角</h2>
+    <p class="ch-q">原子尺度上并不存在光滑的“镜面”。反射定律从哪里来？</p>
+  </header>
+
+  <figure class="fig" id="fig-huygens">
+    <div class="fig-head">
+      <span class="fig-no">图 5</span>
+      <span class="fig-title">由表面原子发出的子波，叠加出反射波与折射波</span>
+      <button class="play" type="button" aria-pressed="true"><svg class="i-pause" viewBox="0 0 12 12" aria-hidden="true"><rect x="2" y="1" width="3" height="10" rx="1"/><rect x="7" y="1" width="3" height="10" rx="1"/></svg><svg class="i-play" viewBox="0 0 12 12" aria-hidden="true"><path d="M3 1.5v9l7.5-4.5z"/></svg><span class="lbl">暂停</span></button>
+    </div>
+    <div class="panels">
+      <div class="panel"><svg id="huy-svg" class="wide" viewBox="0 0 960 440" role="img" aria-label="入射波前扫过一排表面原子，每个原子依次发出圆形子波；上方子波的公共切线构成反射波前，下方介质中较慢子波的公共切线构成折射波前。"></svg></div>
+    </div>
+    <div class="controls">
+      <div class="ctl">
+        <label for="huy-th">入射角 θ</label>
+        <div class="ctl-row"><input type="range" id="huy-th" min="10" max="70" step="1" value="35"><output id="huy-th-o" for="huy-th">35°</output></div>
+      </div>
+      <div class="ctl">
+        <label for="huy-d">原子间距 d ÷ 波长 λ</label>
+        <div class="ctl-row"><input type="range" id="huy-d" min="0.25" max="2" step="0.05" value="0.3"><output id="huy-d-o" for="huy-d">0.30</output></div>
+      </div>
+      <div class="ctl">
+        <span class="lab" id="huy-mode-l">入射光</span>
+        <div class="seg" id="huy-mode" role="group" aria-labelledby="huy-mode-l">
+          <button type="button" data-v="pulse" aria-pressed="true">单个波前</button>
+          <button type="button" data-v="cw" aria-pressed="false">连续波</button>
+        </div>
+      </div>
+      <label class="check"><input type="checkbox" id="huy-env" checked>显示包络（合成波前）</label>
+    </div>
+    <dl class="readouts">
+      <div><dt>反射角</dt><dd id="huy-r">—</dd></div>
+      <div><dt>折射角（n = 1.5）</dt><dd id="huy-t">—</dd></div>
+      <div class="wide"><dt>反射侧出现的衍射级次</dt><dd class="txt" id="huy-orders">—</dd></div>
+    </dl>
+    <figcaption>入射波前（橙色粗线）扫过表面时，依次“点亮”表面原子（绿色点），每个原子随即发出球面子波，也就是第 2 章里被驱动的偶极子发出的辐射。上方子波的公共切线就是反射波前，下方子波在介质中以 <i>c</i>/<i>n</i> 传播，它们的公共切线是折射波前。把原子间距调到接近或大于波长，再切到“连续波”：除了镜面方向，还会出现额外的衍射方向（虚线）。</figcaption>
+  </figure>
+
+  <div class="prose">
+    <p class="key">每个原子都向所有方向辐射，但只有在镜面方向上，来自不同原子的子波才会步调一致、彼此加强。“入射角等于反射角”，是相位对齐的几何结论。</p>
+    <p>这个结论成立的前提，是原子间距远小于波长。固体中原子间距约 0.3 nm，比可见光波长小一千倍以上，只有镜面方向能留下来。用波长与原子间距相当的 X 射线照射晶体，各原子层的子波会在另外几个特定方向相长，这就是布拉格衍射；人工刻出间距约 1 µm 的条纹，就得到光栅。</p>
+    <p>介质内部的每一层电子其实都在向后辐射。但越深的层，回波的往返路程越长，相位依次错开，像第 5 章将看到的那样卷成一个圆而彼此抵消，最后只剩下与界面有关的部分。所以反射看起来像是发生在“表面”上。</p>
+    <p><b>金属为什么亮？</b>金属中的自由电子没有“弹簧”，在等离子体频率以下（铝约 15 eV，对应 83 nm）几乎把光全部反射回去。金和铜偏黄、偏红，是因为 d 带电子的量子跃迁吸收了一部分蓝绿光。</p>
+  </div>
+
+  <figure class="fig" id="fig-brewster">
+    <div class="fig-head">
+      <span class="fig-no">图 6</span>
+      <span class="fig-title">布儒斯特角：偶极子不向自己的轴线辐射</span>
+      <button class="play" type="button" aria-pressed="true"><svg class="i-pause" viewBox="0 0 12 12" aria-hidden="true"><rect x="2" y="1" width="3" height="10" rx="1"/><rect x="7" y="1" width="3" height="10" rx="1"/></svg><svg class="i-play" viewBox="0 0 12 12" aria-hidden="true"><path d="M3 1.5v9l7.5-4.5z"/></svg><span class="lbl">暂停</span></button>
+    </div>
+    <div class="panels" style="--cols: 7fr 5fr">
+      <div class="panel"><svg id="brew-svg" class="mid-w" viewBox="0 0 560 420" role="img" aria-label="入射、反射、折射光线与介质中振动的电子：电子的辐射方向图为 8 字形；在布儒斯特角时，反射方向与电子振动轴重合，反射光消失。"></svg></div>
+      <div class="panel"><svg id="brew-chart" class="interactive" viewBox="0 0 400 420" role="img" aria-label="菲涅尔反射率随入射角的变化：s 偏振单调增加，p 偏振在布儒斯特角降为零。"></svg></div>
+    </div>
+    <div class="controls">
+      <div class="ctl">
+        <label for="brew-th">入射角 θ₁</label>
+        <div class="ctl-row"><input type="range" id="brew-th" min="0" max="89" step="0.5" value="40"><output id="brew-th-o" for="brew-th">40°</output></div>
+      </div>
+      <div class="ctl">
+        <span class="lab" id="brew-mat-l">介质</span>
+        <div class="seg" id="brew-mat" role="group" aria-labelledby="brew-mat-l">
+          <button type="button" data-v="1.333" aria-pressed="true">水</button>
+          <button type="button" data-v="1.5" aria-pressed="false">玻璃</button>
+          <button type="button" data-v="2.42" aria-pressed="false">钻石</button>
+        </div>
+      </div>
+      <div class="ctl">
+        <span class="lab" id="brew-pol-l">入射光偏振</span>
+        <div class="seg" id="brew-pol" role="group" aria-labelledby="brew-pol-l">
+          <button type="button" data-v="p" aria-pressed="true">p（在入射面内）</button>
+          <button type="button" data-v="s" aria-pressed="false">s（垂直入射面）</button>
+        </div>
+      </div>
+      <div class="chips"><button type="button" id="brew-jump">跳到布儒斯特角</button></div>
+    </div>
+    <dl class="readouts">
+      <div><dt>折射角 θ₂</dt><dd id="brew-th2">—</dd></div>
+      <div><dt>θ₁ + θ₂</dt><dd id="brew-sum">—</dd></div>
+      <div><dt>Rₛ</dt><dd id="brew-rs">—</dd></div>
+      <div><dt>Rₚ</dt><dd id="brew-rp">—</dd></div>
+      <div><dt>布儒斯特角 arctan n</dt><dd id="brew-tb">—</dd></div>
+      <div><dt>自然光反射后的偏振度</dt><dd id="brew-dop">—</dd></div>
+    </dl>
+    <figcaption>左：介质中的电子沿垂直于折射光的方向振动（p 偏振时在纸面内）。它的辐射方向图是 8 字形，沿振动轴为零。当反射方向恰好落在振动轴上，即 <span class="m"><i>θ</i><sub>1</sub> + <i>θ</i><sub>2</sub> = 90°</span>，反射光消失。s 偏振时电子垂直纸面振动，在纸面内各个方向都辐射，反射永不为零。这是一个直观图像，但它给出的零点位置 <span class="m">tan<i>θ</i><sub>B</sub> = <i>n</i><sub>2</sub>/<i>n</i><sub>1</sub></span> 是精确的。右：菲涅尔反射率，点击或拖动图表可以改变入射角。</figcaption>
+  </figure>
+
+  <div class="prose">
+    <p>水的布儒斯特角约 53°。在这个角度附近，水面反射光几乎全是 s 偏振（电场水平振动），所以透光轴竖直的偏振太阳镜能挡掉水面的眩光；摄影师加偏振镜拍到水下的石头，也是同一个原理。</p>
+  </div>
+  <aside class="rs">
+    <div class="rs-h"><svg viewBox="0 0 16 16" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="1.4"><rect x="5.5" y="5.5" width="5" height="5" rx="1"/><path d="M1 3.5h4M11 12.5h4M3 1.5v4M13 10.5v4"/></g></svg>遥感中的体现</div>
+    <p>平静水面会把阳光镜面反射进传感器，形成<b>太阳耀斑</b>（sun glint）。耀斑会淹没水色信号，但它的形状又能反过来测量海面粗糙度和风速，耀斑里的油膜也更容易被识别。<b>偏振遥感</b>把“反射光的偏振随角度变化”当作信息：多角度偏振仪（POLDER/PARASOL，以及 PACE 卫星上的 HARP2、SPEXone）用它反演气溶胶的粒径与折射率、云滴的大小。</p>
+  </aside>
+</section>
+
+<!-- ======================================================= 05 -->
+<section class="chapter" id="ch5">
+  <header class="ch-head prose">
+    <div class="ch-meta"><span class="ch-no">第 05 章</span><span class="band" style="--sw: linear-gradient(90deg, #2fb24a, #d8c400, #8a8f99)">涉及波段：可见光 · 雷达</span></div>
+    <h2>量子视角：光子走遍所有路径</h2>
+    <p class="ch-q">一个光子怎么“知道”自己该以等角反射？</p>
+  </header>
+
+  <figure class="fig" id="fig-qed">
+    <div class="fig-head">
+      <span class="fig-no">图 7</span>
+      <span class="fig-title">费曼的小箭头：把所有可能的路径加起来</span>
+      <button class="play" type="button" aria-pressed="true"><svg class="i-pause" viewBox="0 0 12 12" aria-hidden="true"><rect x="2" y="1" width="3" height="10" rx="1"/><rect x="7" y="1" width="3" height="10" rx="1"/></svg><svg class="i-play" viewBox="0 0 12 12" aria-hidden="true"><path d="M3 1.5v9l7.5-4.5z"/></svg><span class="lbl">暂停</span></button>
+    </div>
+    <div class="panels" style="--cols: 5fr 3fr">
+      <div class="panel"><svg id="qed-svg" class="mid-w" viewBox="0 0 600 480" role="img" aria-label="光子从光源 S 经镜面上各点到达探测器 P 的所有路径，每条路径的耗时，以及每条路径对应的相位箭头。"></svg></div>
+      <div class="panel"><svg id="qed-sum" viewBox="0 0 360 480" role="img" aria-label="所有路径的相位箭头首尾相接：中间路径的箭头同向相加，边缘路径的箭头卷曲抵消；最终箭头长度的平方正比于概率。"></svg></div>
+    </div>
+    <div class="controls">
+      <div class="ctl">
+        <label for="qed-lam">波长（示意单位）</label>
+        <div class="ctl-row"><input type="range" id="qed-lam" min="24" max="90" step="1" value="44"><output id="qed-lam-o" for="qed-lam">44</output></div>
+      </div>
+      <div class="ctl">
+        <span class="lab" id="qed-mode-l">镜子</span>
+        <div class="seg" id="qed-mode" role="group" aria-labelledby="qed-mode-l">
+          <button type="button" data-v="full" aria-pressed="true">整面镜子</button>
+          <button type="button" data-v="left" aria-pressed="false">只留左边一段</button>
+          <button type="button" data-v="grating" aria-pressed="false">把左边刻成光栅</button>
+        </div>
+      </div>
+    </div>
+    <dl class="readouts">
+      <div><dt>到达 P 的概率（相对整面镜子）</dt><dd id="qed-p">—</dd></div>
+      <div><dt>参与的镜面条带</dt><dd id="qed-n">—</dd></div>
+      <div class="wide"><dt>发生了什么</dt><dd class="txt" id="qed-say">—</dd></div>
+    </dl>
+    <figcaption>左上：光子从 S 到 P、经镜面上某一点反射的每一条路径（挡板挡住了直线路径）。左中：每条路径的耗时，在镜面反射点处最短。左下：每条路径对应一个“秒表指针”，光子飞行时指针匀速旋转，到达时的指向就是这条路径的箭头。右：把所有小箭头首尾相接，最终箭头长度的平方正比于光子到达 P 的概率。切换到“只留左边一段”，箭头打转、几乎抵消；再“把左边刻成光栅”，只保留指向相近的条带，光就出现了。</figcaption>
+  </figure>
+
+  <div class="prose">
+    <p class="key">量子电动力学（QED）的规则出奇地简单：一件事发生的概率幅，等于它所有可能发生方式的“箭头”之和。光子并没有挑一条路走；绝大多数路径的箭头互相抵消，只有耗时取极值的路径附近，箭头方向一致、彼此加强。</p>
+    <p>这就是“入射角等于反射角”与费马最短时间原理的量子根源：在耗时的极值附近，路径稍有改变，耗时几乎不变，箭头方向也几乎不变（驻定相位）。折射同理：光在玻璃中走同样的距离要多花 <i>n</i> 倍的时间，秒表指针也多转 <i>n</i> 倍；耗时最短的路径于是在界面处弯折，弯折的角度正好满足斯涅尔定律。</p>
+    <p>镜子的边缘其实也在“反射”，只是那里的箭头相互抵消了。刻掉一半条带（光栅）就破坏了这种抵消，光便出现在“不该出现”的方向。光盘表面的彩虹、光栅光谱仪，都依赖这一点。</p>
+  </div>
+
+  <figure class="fig" id="fig-film">
+    <div class="fig-head">
+      <span class="fig-no">图 8</span>
+      <span class="fig-title">一块玻璃片的反射：在 0 与 16% 之间振荡</span>
+      <button class="play" type="button" aria-pressed="true"><svg class="i-pause" viewBox="0 0 12 12" aria-hidden="true"><rect x="2" y="1" width="3" height="10" rx="1"/><rect x="7" y="1" width="3" height="10" rx="1"/></svg><svg class="i-play" viewBox="0 0 12 12" aria-hidden="true"><path d="M3 1.5v9l7.5-4.5z"/></svg><span class="lbl">暂停</span></button>
+    </div>
+    <div class="panels" style="--cols: 0.9fr 1fr 1.1fr">
+      <div class="panel"><svg id="film-slab" viewBox="0 0 300 300" role="img" aria-label="厚度可变的玻璃片，前后两个表面各反射一部分光；色块显示白光照射下反射光的颜色。"></svg></div>
+      <div class="panel"><svg id="film-arc" viewBox="0 0 330 300" role="img" aria-label="玻璃中各层电子的回波箭头首尾相接成一段圆弧，总箭头是圆弧的弦，等于前表面与后表面两个半径箭头之和。"></svg></div>
+      <div class="panel"><svg id="film-chart" class="interactive" viewBox="0 0 360 300" role="img" aria-label="反射率随玻璃厚度周期振荡，蓝光与红光的周期不同。"></svg></div>
+    </div>
+    <div class="controls">
+      <div class="ctl">
+        <label for="film-d">玻璃厚度 d（n = 1.5）</label>
+        <div class="ctl-row"><input type="range" id="film-d" min="0" max="600" step="1" value="120"><output id="film-d-o" for="film-d">120 nm</output></div>
+      </div>
+      <div class="chips"><button type="button" id="film-q">d = λ/(4n)：反射最强</button><button type="button" id="film-h">d = λ/(2n)：反射为零</button></div>
+    </div>
+    <dl class="readouts">
+      <div><dt>往返相位差 4πnd/λ（λ = 500 nm）</dt><dd id="film-ph">—</dd></div>
+      <div><dt>反射率（500 nm，两箭头模型）</dt><dd id="film-r">—</dd></div>
+      <div class="wide"><dt>说明</dt><dd class="txt" id="film-say">—</dd></div>
+    </dl>
+    <figcaption>左：玻璃片，厚度可调；色块是白光照射下反射光的颜色，与肥皂泡、油膜的颜色同源。中：玻璃中每一层电子的回波都是一个小箭头，越深的层转过的角度越大，连起来是一段圆弧；总箭头就是这段弧的<b>弦</b>，它恰好等于“前表面箭头 + 后表面箭头”（两条虚线半径）。右：反射率随厚度变化。简化模型（每个表面振幅 0.2）下在 0 与 16% 之间振荡，计入多次内反射后最大值约 15%。</figcaption>
+  </figure>
+
+  <div class="prose">
+    <p>“前表面反射 4%、后表面反射 4%”只是一种有效描述。真正散射光子的是玻璃中所有的电子；深处各层的贡献卷成圆弧、大部分抵消，最后的结果只取决于弧的两个端点，也就是两个表面。这就是第 4 章“反射看起来发生在表面上”的量子版本。</p>
+    <p>对一块悬空的玻璃片，前表面的反射发生在“由疏到密”的界面，箭头翻转 180°，后表面则不翻转；所以厚度为 <span class="m"><i>λ</i>/(2<i>n</i>)</span> 的整数倍时两箭头反向抵消，厚度为 <span class="m"><i>λ</i>/(4<i>n</i>)</span> 时同向相加。镜头和卫星光学系统上的<b>增透膜</b>是镀在玻璃上的一层低折射率薄膜，它的上下两个界面都是“由疏到密”，两个箭头都翻转，于是膜厚取 <span class="m"><i>λ</i>/(4<i>n</i>)</span> 时恰好反向抵消。</p>
+  </div>
+  <aside class="rs">
+    <div class="rs-h"><svg viewBox="0 0 16 16" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="1.4"><rect x="5.5" y="5.5" width="5" height="5" rx="1"/><path d="M1 3.5h4M11 12.5h4M3 1.5v4M13 10.5v4"/></g></svg>遥感中的体现</div>
+    <p><b>雷达干涉（InSAR）就是在比较箭头的方向。</b>雷达回波的相位 <span class="m"><i>φ</i> = 4π<i>R</i>/<i>λ</i></span> 记录了天线到地面的距离 <i>R</i>。对同一地点两次成像，相位差揭示了这段时间里地面沿视线方向移动了多少：C 波段（<i>λ</i> ≈ 5.6 cm）的一个完整干涉条纹对应 2.8 cm 的形变。地震形变、火山膨胀、城市地面沉降，都是这样被测到毫米级的。</p>
+  </aside>
+</section>
+
+<!-- ======================================================= 06 -->
+<section class="chapter" id="ch6">
+  <header class="ch-head prose">
+    <div class="ch-meta"><span class="ch-no">第 06 章</span><span class="band" style="--sw: linear-gradient(90deg, #2fb24a, #e3261b, #8a8f99, #3d7a8a)">涉及波段：可见光 ↔ 微波</span></div>
+    <h2>光滑还是粗糙？取决于波长</h2>
+    <p class="ch-q">镜面反射与漫反射的分界线在哪里？</p>
+  </header>
+
+  <figure class="fig" id="fig-rough">
+    <div class="fig-head">
+      <span class="fig-no">图 9</span>
+      <span class="fig-title">表面起伏与波长之比，决定了反射的方式</span>
+      <button class="play" type="button" aria-pressed="true"><svg class="i-pause" viewBox="0 0 12 12" aria-hidden="true"><rect x="2" y="1" width="3" height="10" rx="1"/><rect x="7" y="1" width="3" height="10" rx="1"/></svg><svg class="i-play" viewBox="0 0 12 12" aria-hidden="true"><path d="M3 1.5v9l7.5-4.5z"/></svg><span class="lbl">暂停</span></button>
+    </div>
+    <div class="panels" style="--cols: 5fr 3fr">
+      <div class="panel"><svg id="rough-svg" class="mid-w" viewBox="0 0 600 410" role="img" aria-label="粗糙表面剖面与入射光子：起伏远小于波长时光子沿镜面方向离开，起伏与波长相当或更大时散向各个方向。"></svg></div>
+      <div class="panel"><svg id="rough-side" viewBox="0 0 360 410" role="img" aria-label="上：散射强度的方向图，包含镜面分量与漫射分量；下：各面元回波相位箭头的叠加，光滑时同向，粗糙时随机行走。"></svg></div>
+    </div>
+    <div class="controls">
+      <div class="ctl">
+        <label for="rough-lam">波长 λ</label>
+        <div class="ctl-row"><input type="range" id="rough-lam" min="0" max="1000" step="1" value="0"><output id="rough-lam-o" for="rough-lam">—</output></div>
+      </div>
+      <div class="ctl">
+        <label for="rough-sig">表面起伏（均方根高度 σ）</label>
+        <div class="ctl-row"><input type="range" id="rough-sig" min="0" max="1000" step="1" value="0"><output id="rough-sig-o" for="rough-sig">—</output></div>
+      </div>
+      <div class="ctl">
+        <span class="lab" id="rough-pre-l">场景</span>
+        <div class="chips" id="rough-pre" role="group" aria-labelledby="rough-pre-l">
+          <button type="button" data-l="5.5e-7" data-s="5e-9">抛光玻璃 · 可见光</button>
+          <button type="button" data-l="5.5e-7" data-s="5e-4">沙地 · 可见光</button>
+          <button type="button" data-l="0.24" data-s="5e-4">沙地 · L 波段雷达</button>
+          <button type="button" data-l="0.0555" data-s="0.02">耕地 · C 波段</button>
+          <button type="button" data-l="0.0555" data-s="1e-3">平静湖面 · C 波段</button>
+        </div>
+      </div>
+    </div>
+    <dl class="readouts">
+      <div><dt>σ ÷ λ</dt><dd id="rough-ratio">—</dd></div>
+      <div><dt>瑞利判据 λ/(8 cos θ)</dt><dd id="rough-crit">—</dd></div>
+      <div><dt>镜面（相干）分量 e<sup>−g</sup></dt><dd id="rough-spec">—</dd></div>
+      <div class="wide"><dt>对这个波长而言，表面是</dt><dd class="txt" id="rough-say">—</dd></div>
+    </dl>
+    <figcaption>左：表面剖面，纵向按“起伏与波长之比”绘制（左上角的正弦线就是一个波长）；入射角固定为 35°。光子打到表面后，以概率 <span class="m">e<sup>−<i>g</i></sup></span> 沿镜面方向离开，其余散向各个方向，其中 <span class="m"><i>g</i> = (4π<i>σ</i> cos<i>θ</i>/<i>λ</i>)²</span>。右上：散射强度方向图。右下：30 个面元回波的小箭头。起伏远小于波长时箭头同向，叠加成强的镜面反射；起伏接近 λ/8 或更大时，箭头方向随机，变成“随机行走”。</figcaption>
+  </figure>
+
+  <div class="prose">
+    <p class="key">“粗糙”不是表面本身的属性，而是表面起伏与波长的比值。同一片沙地，对可见光是粗糙的（漫反射，所以看起来不刺眼），对 24 cm 波长的 L 波段雷达却几乎是镜面。</p>
+    <p>原理仍然是箭头相加：从高度不同的面元反射回来的子波，路程差为 <span class="m">2<i>h</i> cos<i>θ</i></span>，相位差为 <span class="m">4π<i>h</i> cos<i>θ</i>/<i>λ</i></span>。高度起伏 <i>σ</i> 远小于波长时，所有箭头几乎同向；当 <i>σ</i> 超过约 <span class="m"><i>λ</i>/(8 cos<i>θ</i>)</span>（瑞利判据），箭头方向变得随机，镜面方向的相干叠加被破坏，能量散向各个方向。</p>
+  </div>
+  <aside class="rs">
+    <div class="rs-h"><svg viewBox="0 0 16 16" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="1.4"><rect x="5.5" y="5.5" width="5" height="5" rx="1"/><path d="M1 3.5h4M11 12.5h4M3 1.5v4M13 10.5v4"/></g></svg>遥感中的体现</div>
+    <p>雷达影像的明暗几乎完全由粗糙度与介电常数决定。平静的湖面把侧视雷达的波镜面反射到远处，在 SAR 图像上发黑。风吹起厘米级的涟漪后，波长满足 <span class="m">Λ = <i>λ</i>/(2 sin<i>θ</i>)</span> 的那部分海浪与雷达波发生共振，后向散射增强（布拉格散射），海面变亮；散射计（如 ASCAT）据此反演全球海面风场。油膜会抑制毛细波，在海面留下暗斑，这是溢油监测的依据。1981 年，航天飞机上的 SIR-A 雷达用 L 波段“看穿”了撒哈拉干燥的沙层，发现了被掩埋的古河道。</p>
+  </aside>
+</section>
+
+<!-- ======================================================= 07 -->
+<section class="chapter" id="ch7">
+  <header class="ch-head prose">
+    <div class="ch-meta"><span class="ch-no">第 07 章</span><span class="band" style="--sw: linear-gradient(90deg, #2f5bff, #2fb24a, #e3261b, #b0207f, #6a4bc4)">涉及波段：0.4–2.5 µm（可见光 · 近红外 · 短波红外）</span></div>
+    <h2>进入物质内部：吸收与体散射</h2>
+    <p class="ch-q">为什么健康的叶片在近红外比在绿光下亮得多？</p>
+  </header>
+
+  <figure class="fig" id="fig-leaf">
+    <div class="fig-head">
+      <span class="fig-no">图 10</span>
+      <span class="fig-title">叶片中光子的随机旅程（蒙特卡罗模拟）</span>
+      <button class="play" type="button" aria-pressed="true"><svg class="i-pause" viewBox="0 0 12 12" aria-hidden="true"><rect x="2" y="1" width="3" height="10" rx="1"/><rect x="7" y="1" width="3" height="10" rx="1"/></svg><svg class="i-play" viewBox="0 0 12 12" aria-hidden="true"><path d="M3 1.5v9l7.5-4.5z"/></svg><span class="lbl">暂停</span></button>
+    </div>
+    <div class="panels" style="--cols: 6fr 3.4fr">
+      <div class="panel"><svg id="leaf-svg" class="mid-w" viewBox="0 0 620 420" role="img" aria-label="叶片截面：上表皮、栅栏组织、海绵组织和下表皮；光子在细胞与空气的界面上反复改变方向，部分被吸收，部分从上表面或下表面离开。"></svg></div>
+      <div class="panel"><svg id="leaf-bars" viewBox="0 0 340 420" role="img" aria-label="当前波段的模拟反射、透射与吸收比例，并与典型叶片的实测量级比较。"></svg></div>
+    </div>
+    <div class="controls">
+      <div class="ctl">
+        <span class="lab" id="leaf-band-l">波段</span>
+        <div class="seg" id="leaf-band" role="group" aria-labelledby="leaf-band-l">
+          <button type="button" data-v="450" aria-pressed="false">蓝 450 nm</button>
+          <button type="button" data-v="550" aria-pressed="false">绿 550 nm</button>
+          <button type="button" data-v="670" aria-pressed="false">红 670 nm</button>
+          <button type="button" data-v="850" aria-pressed="true">近红外 850 nm</button>
+          <button type="button" data-v="1450" aria-pressed="false">1450 nm（水）</button>
+          <button type="button" data-v="1650" aria-pressed="false">短波红外 1650 nm</button>
+        </div>
+      </div>
+      <div class="chips"><button type="button" id="leaf-fast">快速模拟 3000 个光子</button></div>
+    </div>
+    <figcaption>光子从上方射入叶片。它们在细胞壁（<i>n</i> ≈ 1.4）与胞间空气（<i>n</i> = 1.0）的界面上反复折射、反射，方向不断被打乱，同时有一定概率被色素或水吸收；射向表面的光子若入射角超过临界角，会被全反射回叶片内部。选择不同波段，比较从上表面逃出（反射）、从下表面穿出（透射）与被吸收的比例。右侧条形是本次模拟的累计结果，竖线是典型阔叶的实测量级。模型是示意性的：散射被处理为随机方向改变，参数按典型叶片的光学性质标定。</figcaption>
+  </figure>
+
+  <div class="prose">
+    <p class="key">吸收决定颜色，结构决定亮度。叶绿素吸收红光和蓝光（电子跃迁），所以叶片呈绿色；叶肉内部无数折射率突变的界面把光反复散射，所以叶片在近红外格外明亮。</p>
+    <ul class="pts">
+      <li><b>近红外为什么不被吸收？</b>850 nm 光子的能量约 1.46 eV，低于叶绿素最低激发态所需的约 1.8 eV（对应约 680 nm），又远高于分子振动的基频。它“对不上”任何能级，只能被散射。叶片受到胁迫时，叶肉细胞失水塌陷，内部界面减少，近红外反射率下降，常常早于肉眼可见的变黄。</li>
+      <li><b>漫反射的另一个来源：体散射。</b>许多明亮的白色物体，例如雪、云、牛奶、白纸，并不是因为表面粗糙，而是因为内部有大量折射率起伏的界面，光在其中多次散射后再出来。冰本身是透明的，雪却是白的；冰在短波红外的吸收增强，雪在那里就变暗。</li>
+      <li><b>水的指纹：</b>1.45 µm 和 1.94 µm 的吸收来自 O–H 键振动的倍频与合频，也就是量子振动能级之间的跃迁。叶片含水越多，这两处越暗。</li>
+    </ul>
+  </div>
+
+  <figure class="fig" id="fig-spectra">
+    <div class="fig-head">
+      <span class="fig-no">图 11</span>
+      <span class="fig-title">地物光谱：每一个“谷”都对应一个微观过程</span>
+    </div>
+    <div class="panels">
+      <div class="panel"><svg id="spec-svg" class="wide interactive" viewBox="0 0 960 420" role="img" aria-label="植被、土壤、水体、雪的典型反射光谱（0.4 到 2.5 微米）与 Sentinel-2 波段位置，标注叶绿素吸收、红边、叶片水分吸收、黏土吸收和冰吸收等特征。"></svg></div>
+    </div>
+    <div class="tbl-wrap">
+      <table class="data" id="spec-table">
+        <thead><tr><th scope="col">地物</th><th scope="col">B3 绿 560</th><th scope="col">B4 红 665</th><th scope="col">B8 近红外 842</th><th scope="col">B11 短波红外 1610</th><th scope="col">NDVI</th><th scope="col">NDWI</th><th scope="col">NDSI</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+    <figcaption>四类地物的典型反射光谱（数值为文献量级的近似）与 Sentinel-2 的波段位置（竖条）。灰色区域被大气水汽强烈吸收，地面信号几乎到不了卫星，只有 B10（1375 nm）专门放在这里用来探测卷云。把指针移到图上查看各波长的数值。下表是本图的数据视图：<span class="m">NDVI = (B8−B4)/(B8+B4)</span>，<span class="m">NDWI = (B3−B8)/(B3+B8)</span>，<span class="m">NDSI = (B3−B11)/(B3+B11)</span>。</figcaption>
+  </figure>
+
+  <div class="prose">
+    <p>遥感指数本质上是在比较两个波段背后的两种物理过程。NDVI 比较的是“叶肉中的多次散射”与“叶绿素吸收”；NDWI 用绿光与近红外区分水体，因为水在近红外几乎是黑的；NDSI 用绿光与短波红外区分雪和云：雪在 1.6 µm 因冰的吸收而变暗，由小水滴组成的云在那里依然明亮。</p>
+  </div>
+
+  <figure class="fig" id="fig-composite">
+    <div class="fig-head">
+      <span class="fig-no">图 12</span>
+      <span class="fig-title">合成一幅影像：换一组波段，世界就换了颜色</span>
+    </div>
+    <div class="panels" style="--cols: 6fr 3.4fr">
+      <div class="panel"><svg id="comp-map" class="mid-w interactive" viewBox="0 0 600 380" role="img" aria-label="用典型光谱合成的模拟卫星影像，包含河流、湖泊、森林、农田、裸土、城镇和雪山，可切换真彩色、假彩色、短波红外合成与 NDVI。"></svg></div>
+      <div class="panel"><svg id="comp-key" viewBox="0 0 340 380" role="img" aria-label="当前合成方案中红、绿、蓝三个显示通道分别对应的波段，以及各类地物在其中呈现的颜色。"></svg></div>
+    </div>
+    <div class="controls">
+      <div class="ctl">
+        <span class="lab" id="comp-mode-l">波段组合（Sentinel-2）</span>
+        <div class="seg" id="comp-mode" role="group" aria-labelledby="comp-mode-l">
+          <button type="button" data-v="true" aria-pressed="true">真彩色 B4·B3·B2</button>
+          <button type="button" data-v="false" aria-pressed="false">标准假彩色 B8·B4·B3</button>
+          <button type="button" data-v="swir" aria-pressed="false">短波红外 B12·B8·B4</button>
+          <button type="button" data-v="ndvi" aria-pressed="false">NDVI</button>
+        </div>
+      </div>
+    </div>
+    <figcaption>一幅用上面的光谱合成的模拟影像：每个像素是几类地物光谱按比例的线性混合（“混合像元”），再加上少量噪声。在标准假彩色（近红外 → 红色通道）中，植被呈鲜红色，那正是叶片内部多次散射的信号；在短波红外组合中，雪变成青色，因为冰吸收了 2.2 µm 的光；由小水滴组成的云在那里依然明亮，所以这个组合常用来把雪和云分开。把指针移到影像上可以查看像素的波段值。</figcaption>
+  </figure>
+</section>
+
+<!-- ======================================================= 08 -->
+<section class="chapter" id="ch8">
+  <header class="ch-head prose">
+    <div class="ch-meta"><span class="ch-no">第 08 章</span><span class="band" style="--sw: linear-gradient(90deg, #e3261b, #c0391b, #7a2a1a)">涉及波段：3–15 µm（中红外 · 热红外）</span></div>
+    <h2>物体自己也在发光：分子振动与热辐射</h2>
+    <p class="ch-q">卫星为什么在夜里也能“看见”温度？大气为什么只在某些波长透明？</p>
+  </header>
+
+  <figure class="fig" id="fig-vib">
+    <div class="fig-head">
+      <span class="fig-no">图 13</span>
+      <span class="fig-title">分子振动：只有改变偶极矩的振动，才能与光交换能量</span>
+      <button class="play" type="button" aria-pressed="true"><svg class="i-pause" viewBox="0 0 12 12" aria-hidden="true"><rect x="2" y="1" width="3" height="10" rx="1"/><rect x="7" y="1" width="3" height="10" rx="1"/></svg><svg class="i-play" viewBox="0 0 12 12" aria-hidden="true"><path d="M3 1.5v9l7.5-4.5z"/></svg><span class="lbl">暂停</span></button>
+    </div>
+    <div class="panels">
+      <div class="panel"><svg id="vib-svg" class="wide" viewBox="0 0 960 320" role="img" aria-label="六种分子振动模式：氮气伸缩、二氧化碳对称伸缩不改变偶极矩，不吸收红外；二氧化碳弯曲与反对称伸缩、水分子弯曲、臭氧反对称伸缩改变偶极矩，吸收红外。"></svg></div>
+    </div>
+    <figcaption>每个分子下方的曲线是它的电偶极矩随时间的变化（绿色箭头为瞬时偶极矩）。只有振动改变了偶极矩，光的电场才能“抓住”它并交换能量，称为红外活性。N₂、O₂ 振动时偶极矩始终为零，CO₂ 的对称伸缩也是如此；CO₂ 的弯曲（15 µm）与反对称伸缩（4.3 µm），以及 H₂O、O₃ 的振动则强烈吸收红外光。原子的振动频率在图中被放慢了约 10<sup>13</sup> 倍，振幅也被放大。</figcaption>
+  </figure>
+
+  <div class="prose">
+    <p class="key">占大气 99% 的氮气和氧气，振动时不改变偶极矩，几乎不吸收热红外辐射。真正决定大气在哪些波长“不透明”的，是含量很少的水汽、二氧化碳和臭氧。</p>
+    <p>量子化让吸收带上了“指纹”：分子振动的能级是分立的，<span class="m"><i>E<sub>v</sub></i> = (<i>v</i> + ½)<i>hν</i><sub>vib</sub></span>，只有能量恰好等于能级差的光子才会被吸收；再叠加转动能级，就形成成千上万条精细的吸收线。正是这些吸收线围出了遥感可用的大气窗口，也决定了温室效应的强弱：CO₂ 的 15 µm 弯曲振动，恰好落在地球热辐射最强的波段旁边。</p>
+  </div>
+  <aside class="rs">
+    <div class="rs-h"><svg viewBox="0 0 16 16" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="1.4"><rect x="5.5" y="5.5" width="5" height="5" rx="1"/><path d="M1 3.5h4M11 12.5h4M3 1.5v4M13 10.5v4"/></g></svg>磁场直接出手的地方</div>
+    <p>O₂ 分子有两个未配对电子，是顺磁性的，带有永久磁矩。它在 60 GHz 附近和 762 nm（A 带）的吸收是<b>磁偶极跃迁</b>：驱动跃迁的是光的磁场，而不是电场。氧气在大气中混合得非常均匀，这些吸收线于是成了理想的标尺。气象卫星上的微波温度探测仪（AMSU-A、ATMS）用 50–60 GHz 的氧气吸收带反演大气温度廓线；OCO-2 等卫星用 O₂ A 带测量地表气压和云顶高度。水分子的转动跃迁则在 22.235 GHz 留下一条吸收线，微波辐射计用它附近的通道测量大气水汽总量。</p>
+  </aside>
+
+  <figure class="fig" id="fig-planck">
+    <div class="fig-head">
+      <span class="fig-no">图 14</span>
+      <span class="fig-title">普朗克定律与大气窗口：反射的阳光与地物自身的热辐射</span>
+    </div>
+    <div class="panels">
+      <div class="panel"><svg id="planck-svg" class="wide interactive" viewBox="0 0 960 500" role="img" aria-label="对数坐标的光谱辐亮度：地表反射的太阳光、288 K 地表热辐射和可调温度的黑体；下方为整层大气透过率及主要吸收气体。"></svg></div>
+    </div>
+    <div class="controls">
+      <div class="ctl">
+        <label for="planck-T">第三条黑体曲线的温度 T</label>
+        <div class="ctl-row"><input type="range" id="planck-T" min="200" max="6000" step="10" value="1000"><output id="planck-T-o" for="planck-T">1000 K</output></div>
+      </div>
+      <div class="ctl">
+        <span class="lab" id="planck-pre-l">参照</span>
+        <div class="chips" id="planck-pre" role="group" aria-labelledby="planck-pre-l">
+          <button type="button" data-v="230">卷云顶 230 K</button>
+          <button type="button" data-v="300">地表 300 K</button>
+          <button type="button" data-v="1000">林火 1000 K</button>
+          <button type="button" data-v="5778">太阳表面 5778 K</button>
+        </div>
+      </div>
+      <label class="check"><input type="checkbox" id="planck-rj">显示经典预言（瑞利–金斯）</label>
+    </div>
+    <dl class="readouts">
+      <div><dt>峰值波长 2898/T（维恩）</dt><dd id="planck-peak">—</dd></div>
+      <div><dt>总辐射出射度 σT⁴</dt><dd id="planck-tot">—</dd></div>
+      <div><dt>峰值处 hν ÷ kT</dt><dd id="planck-ratio">—</dd></div>
+    </dl>
+    <figcaption>上：光谱辐亮度（对数坐标）。反照率 0.3 的地表反射的太阳光，与 288 K 地表自身的热辐射，在 4 µm 附近大小相当：更短的波长，卫星看到的主要是反射的阳光；更长的波长，主要是地物的热辐射。滑块控制第三条黑体曲线的温度；勾选“经典预言”可以看到没有量子化时的“紫外灾难”。下：整层大气的透过率（示意），遥感波段只能落在窗口里。把指针移到图上可查看数值。</figcaption>
+  </figure>
+
+  <div class="prose">
+    <ul class="pts">
+      <li><b>普朗克的量子假设：</b>如果振子的能量可以连续取值，每个频率的模式都会分到 <i>kT</i> 的热能，高频辐射趋于无穷，这就是“紫外灾难”。普朗克假设能量只能以 <i>hν</i> 为单位交换：当 <i>hν</i> 远大于 <i>kT</i> 时，这一“份”能量很难被热运动凑齐，高频辐射被指数压低。曲线峰值位置满足 <span class="m"><i>λ</i><sub>max</sub> ≈ 2898 µm·K / <i>T</i></span>（维恩定律）。</li>
+      <li><b>基尔霍夫定律：</b>对不透明物体，发射率 = 吸收率 = 1 − 反射率。水在热红外几乎不反射（约 1%），发射率约 0.99，接近完美黑体，海表温度因此可以测到约 0.3 K 的精度；抛光金属反射强、发射率低，在热红外图像里显得“冷”。第 2 章说的剩余射线带，在这里变成了石英质岩石发射率曲线上的“凹槽”。</li>
+      <li><b>微波段：</b><span class="m"><i>hν</i> ≪ <i>kT</i></span>，普朗克定律退化为瑞利–金斯近似，辐亮度与温度成正比，可以直接用“亮温” <span class="m"><i>T</i><sub>B</sub> = <i>e</i>·<i>T</i></span> 来描述。第 9 章的土壤水分反演就建立在这一点上。</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ======================================================= 09 -->
+<section class="chapter" id="ch9">
+  <header class="ch-head prose">
+    <div class="ch-meta"><span class="ch-no">第 09 章</span><span class="band" style="--sw: linear-gradient(90deg, #3d7a8a, #74b6c6, #3d7a8a)">涉及波段：微波 1 mm–1 m</span></div>
+    <h2>微波的世界：水分子、土壤水分与雷达</h2>
+    <p class="ch-q">雷达和微波辐射计为什么能“看见”土壤里的水？</p>
+  </header>
+
+  <figure class="fig" id="fig-debye">
+    <div class="fig-head">
+      <span class="fig-no">图 15</span>
+      <span class="fig-title">水分子的取向极化：转得过来，还是转不过来</span>
+      <button class="play" type="button" aria-pressed="true"><svg class="i-pause" viewBox="0 0 12 12" aria-hidden="true"><rect x="2" y="1" width="3" height="10" rx="1"/><rect x="7" y="1" width="3" height="10" rx="1"/></svg><svg class="i-play" viewBox="0 0 12 12" aria-hidden="true"><path d="M3 1.5v9l7.5-4.5z"/></svg><span class="lbl">暂停</span></button>
+    </div>
+    <div class="panels" style="--cols: 7fr 5fr">
+      <div class="panel"><svg id="deb-svg" class="mid-w" viewBox="0 0 560 390" role="img" aria-label="一群水分子在交变电场中随热运动摆动，并在低频时整体跟随电场转动；右侧量规比较电场与极化的相位。"></svg></div>
+      <div class="panel"><svg id="deb-chart" class="interactive" viewBox="0 0 400 390" role="img" aria-label="20 摄氏度纯水的介电常数实部与虚部随频率的变化（双德拜模型），标出 L、C、X、Ka 等遥感频率与微波炉频率。"></svg></div>
+    </div>
+    <div class="controls">
+      <div class="ctl">
+        <label for="deb-f">频率 f（对数刻度）</label>
+        <div class="ctl-row"><input type="range" id="deb-f" min="0" max="1000" step="1" value="288"><output id="deb-f-o" for="deb-f">1.4 GHz</output></div>
+      </div>
+      <div class="ctl">
+        <span class="lab" id="deb-pre-l">跳到</span>
+        <div class="chips" id="deb-pre" role="group" aria-labelledby="deb-pre-l">
+          <button type="button" data-v="1.41">L 1.41 GHz（SMAP）</button>
+          <button type="button" data-v="2.45">微波炉 2.45 GHz</button>
+          <button type="button" data-v="5.405">C 5.4 GHz（Sentinel-1）</button>
+          <button type="button" data-v="36.5">Ka 36.5 GHz</button>
+          <button type="button" data-v="600">600 GHz</button>
+        </div>
+      </div>
+    </div>
+    <dl class="readouts">
+      <div><dt>ε′（储能）</dt><dd id="deb-e1">—</dd></div>
+      <div><dt>ε″（损耗）</dt><dd id="deb-e2">—</dd></div>
+      <div><dt>折射率 n = Re√ε</dt><dd id="deb-n">—</dd></div>
+      <div><dt>在水中的穿透深度</dt><dd id="deb-dp">—</dd></div>
+      <div class="wide"><dt>水分子的状态</dt><dd class="txt" id="deb-say">—</dd></div>
+    </dl>
+    <figcaption>左：水分子是 V 形的，氧端带部分负电、氢端带部分正电，有固有偶极矩（绿色箭头）。在交变电场中，分子一边被热运动随机扰动，一边被拉向电场方向；右侧两个量规比较电场 E 与整体极化 P 的步调。分子转动在图中被放慢了约十亿倍。右：20 °C 纯水的复介电常数（双德拜模型，Liebe 等 1991）。低频时分子跟得上，ε′ ≈ 80；约 17 GHz 处开始跟不上、滞后耗能（ε″ 峰值，微波炉正是利用这种损耗加热）；到了可见光频率，分子完全转不动，只剩电子响应，<span class="m"><i>ε</i>′ = 1.77</span>，<span class="m"><i>n</i> = 1.33</span>。</figcaption>
+  </figure>
+
+  <div class="prose">
+    <p class="key">同样是水，可见光下的折射率是 1.33，在 L 波段微波下却接近 9。差别来自水分子能不能“转得过来”，这让水在微波波段与干燥的土壤、岩石截然不同。</p>
+  </div>
+
+  <figure class="fig" id="fig-soil">
+    <div class="fig-head">
+      <span class="fig-no">图 16</span>
+      <span class="fig-title">土壤水分 → 介电常数 → 发射率 → 微波亮温</span>
+      <button class="play" type="button" aria-pressed="true"><svg class="i-pause" viewBox="0 0 12 12" aria-hidden="true"><rect x="2" y="1" width="3" height="10" rx="1"/><rect x="7" y="1" width="3" height="10" rx="1"/></svg><svg class="i-play" viewBox="0 0 12 12" aria-hidden="true"><path d="M3 1.5v9l7.5-4.5z"/></svg><span class="lbl">暂停</span></button>
+    </div>
+    <div class="panels" style="--cols: 13fr 11fr">
+      <div class="panel"><svg id="soil-svg" viewBox="0 0 520 380" role="img" aria-label="土壤截面中孔隙逐渐被水填充，向上的波纹表示土壤的微波热辐射，被 L 波段辐射计接收。"></svg></div>
+      <div class="panel"><svg id="soil-chart" class="interactive" viewBox="0 0 440 380" role="img" aria-label="L 波段 40 度入射时，水平与垂直极化亮温随土壤体积含水量增加而下降。"></svg></div>
+    </div>
+    <div class="controls">
+      <div class="ctl">
+        <label for="soil-m">土壤体积含水量 θᵥ</label>
+        <div class="ctl-row"><input type="range" id="soil-m" min="0" max="0.45" step="0.005" value="0.1"><output id="soil-m-o" for="soil-m">0.10 m³/m³</output></div>
+      </div>
+    </div>
+    <dl class="readouts">
+      <div><dt>土壤介电常数 ε′（CRIM）</dt><dd id="soil-eps">—</dd></div>
+      <div><dt>折射率 n = √ε′</dt><dd id="soil-n">—</dd></div>
+      <div><dt>反射率 R（H 极化，40°）</dt><dd id="soil-R">—</dd></div>
+      <div><dt>发射率 e = 1 − R</dt><dd id="soil-e">—</dd></div>
+      <div><dt>亮温 T<sub>B</sub>（H / V）</dt><dd id="soil-tb">—</dd></div>
+    </dl>
+    <figcaption>左：随含水量增加，孔隙中的空气（浅色）被水（蓝色）取代；向上的波纹代表土壤的微波热辐射，越密越亮表示亮温越高。右：L 波段（1.4 GHz）、40° 入射时亮温随体积含水量的变化。介电常数用 CRIM 混合模型估计（孔隙度 0.45，矿物 ε = 4.7，水 ε = 79），物理温度 295 K，忽略植被与表面粗糙度。湿土的介电常数大，菲涅尔反射率高，发射率 <span class="m"><i>e</i> = 1 − <i>R</i></span> 低，亮温就低。</figcaption>
+  </figure>
+
+  <div class="prose">
+    <p>这条因果链把整页内容串了起来：<b>水分子的取向极化</b>决定了介电常数，<b>菲涅尔反射</b>（第 3、4 章）决定了反射率，<b>基尔霍夫定律</b>（第 8 章）把反射率变成发射率，<b>瑞利–金斯近似</b>又把发射率直接变成亮温。SMAP 和 SMOS 卫星正是这样每两三天测一次全球表层土壤水分，目标精度约 0.04 m³/m³。海水中的盐离子在 L 波段额外增大 ε″，于是同样的原理还能反演海表盐度。</p>
+  </div>
+
+  <figure class="fig" id="fig-sar">
+    <div class="fig-head">
+      <span class="fig-no">图 17</span>
+      <span class="fig-title">合成孔径雷达：四种典型的散射方式</span>
+      <button class="play" type="button" aria-pressed="true"><svg class="i-pause" viewBox="0 0 12 12" aria-hidden="true"><rect x="2" y="1" width="3" height="10" rx="1"/><rect x="7" y="1" width="3" height="10" rx="1"/></svg><svg class="i-play" viewBox="0 0 12 12" aria-hidden="true"><path d="M3 1.5v9l7.5-4.5z"/></svg><span class="lbl">暂停</span></button>
+    </div>
+    <div class="panels">
+      <div class="panel"><svg id="sar-svg" class="wide" viewBox="0 0 960 450" role="img" aria-label="侧视雷达向地面发射脉冲：平静水面镜面反射，回波极弱；粗糙地表漫散射；森林冠层体散射；建筑与地面构成二面角，回波极强；回波按距离排成一行图像像素。"></svg></div>
+    </div>
+    <div class="controls">
+      <div class="ctl">
+        <span class="lab" id="sar-pol-l">极化方式（发射 / 接收）</span>
+        <div class="seg" id="sar-pol" role="group" aria-labelledby="sar-pol-l">
+          <button type="button" data-v="VV" aria-pressed="true">VV 同极化</button>
+          <button type="button" data-v="VH" aria-pressed="false">VH 交叉极化</button>
+        </div>
+      </div>
+    </div>
+    <figcaption>侧视雷达发出一个脉冲（橙色弧线），再按回波返回的先后把地物排成一行像素（下方灰度条，数字为典型的后向散射系数 σ⁰，C 波段量级）。平静水面把能量镜面反射到远处，回波极弱；粗糙地表向各个方向散射，一部分返回；森林冠层中的叶和枝发生多次体散射，并改变偏振；建筑的墙面与地面构成二面角“角反射器”，把能量原路送回，极亮。切换到交叉极化（VH），体散射的相对地位明显上升，这是用雷达区分森林与裸地的依据。</figcaption>
+  </figure>
+
+  <div class="prose">
+    <p>雷达是主动遥感：它自己照明，不依赖阳光，又能穿透云层，昼夜可用。波长越长穿透越深：X 波段（3 cm）主要被树冠顶部散射，L 波段（24 cm）可以穿过冠层到达树干和地面，P 波段（约 70 cm）更进一步，ESA 的 BIOMASS 卫星就是用 P 波段来测量森林生物量。</p>
+  </div>
+</section>
+
+<!-- ======================================================= 10 -->
+<section class="chapter" id="ch10">
+  <header class="ch-head prose">
+    <div class="ch-meta"><span class="ch-no">第 10 章</span><span class="band" style="--sw: linear-gradient(90deg, #2f5bff, #e3261b, #b0207f, #6a4bc4, #c0391b)">涉及波段：全部</span></div>
+    <h2>全链条：一个像素是怎样形成的</h2>
+    <p class="ch-q">卫星记录下的一个数字，包含了哪些光的历史？</p>
+  </header>
+
+  <figure class="fig" id="fig-chain">
+    <div class="fig-head">
+      <span class="fig-no">图 18</span>
+      <span class="fig-title">从太阳到传感器：光子的几种命运</span>
+      <button class="play" type="button" aria-pressed="true"><svg class="i-pause" viewBox="0 0 12 12" aria-hidden="true"><rect x="2" y="1" width="3" height="10" rx="1"/><rect x="7" y="1" width="3" height="10" rx="1"/></svg><svg class="i-play" viewBox="0 0 12 12" aria-hidden="true"><path d="M3 1.5v9l7.5-4.5z"/></svg><span class="lbl">暂停</span></button>
+    </div>
+    <div class="panels" style="--cols: 7fr 3fr">
+      <div class="panel"><svg id="chain-svg" class="mid-w" viewBox="0 0 680 460" role="img" aria-label="太阳光穿过大气到达水体、植被和土壤，部分被大气散射进传感器，部分被吸收，部分被地表反射后到达卫星；热红外波段中地表和大气自身发射辐射。"></svg></div>
+      <div class="panel"><svg id="chain-bar" viewBox="0 0 280 460" role="img" aria-label="当前波段传感器入瞳信号的组成：大气程辐射、地表信号与热发射所占比例（示意）。"></svg></div>
+    </div>
+    <div class="controls">
+      <div class="ctl">
+        <span class="lab" id="chain-band-l">波段</span>
+        <div class="seg" id="chain-band" role="group" aria-labelledby="chain-band-l">
+          <button type="button" data-v="blue" aria-pressed="true">蓝 490 nm</button>
+          <button type="button" data-v="red" aria-pressed="false">红 665 nm</button>
+          <button type="button" data-v="nir" aria-pressed="false">近红外 842 nm</button>
+          <button type="button" data-v="cirrus" aria-pressed="false">卷云 1375 nm</button>
+          <button type="button" data-v="tir" aria-pressed="false">热红外 11 µm</button>
+        </div>
+      </div>
+    </div>
+    <figcaption>选择一个波段，观察光子的不同命运：被大气分子或气溶胶散射进传感器（程辐射）；被大气吸收；到达地面后被吸收或反射；进入水体、被水中颗粒散射后离开（离水辐亮度）；在热红外波段，由地表和大气自身发射。右侧是该波段入瞳信号的组成，数值为晴空、植被为主场景下的典型量级（示意）。</figcaption>
+  </figure>
+
+  <div class="prose">
+    <p>传感器测到的辐亮度大致可以写成 <span class="m"><i>L</i> = <i>L</i><sub>程</sub> + <i>T</i><sub>↑</sub>·<i>ρ</i>·<i>E</i><sub>↓</sub>/π</span>，热红外波段再加上发射项。我们真正关心的地表反射率 <i>ρ</i> 被夹在大气的散射与吸收之间，“大气校正”就是把它解出来的过程。蓝波段程辐射占比最大，最依赖校正；近红外受大气影响小；1.38 µm 处水汽几乎吞没了来自地面的光，只有高空的卷云还能被看见，Sentinel-2 正是用这个波段（B10）专门识别卷云；热红外则要同时处理地表发射率与大气自身的发射。</p>
+  </div>
+
+  <div class="sum-wrap">
+    <table class="summary">
+      <caption class="prose" style="caption-side: top; text-align: left; padding: 1rem 0.9rem 0.4rem; font: 500 12.5px/1.4 var(--font-mono); letter-spacing: 0.06em; color: var(--muted);">总结：同一套微观物理，在遥感中的不同面孔</caption>
+      <thead><tr><th scope="col">现象</th><th scope="col">微观机制</th><th scope="col">遥感中的体现</th></tr></thead>
+      <tbody>
+        <tr><td>折射</td><td>电子受迫振动发出的次级波与入射波相干叠加，相位逐层落后（第 2–3 章）</td><td>水下光场与离水辐亮度；GNSS 掩星测大气温湿廓线</td></tr>
+        <tr><td>镜面反射</td><td>表面层偶极子的后向辐射只在镜面方向相长；深层贡献相互抵消（第 4–5 章）</td><td>太阳耀斑；平静水面在 SAR 图像中发黑</td></tr>
+        <tr><td>布儒斯特角与偏振</td><td>偶极子不沿自身轴线辐射（第 4 章）</td><td>多角度偏振反演气溶胶与云；极化 SAR</td></tr>
+        <tr><td>干涉</td><td>概率幅（箭头）相加，路程差决定相位（第 5 章）</td><td>InSAR 毫米级形变监测；光学系统增透膜</td></tr>
+        <tr><td>漫反射与体散射</td><td>起伏 ≳ λ/8 时相位随机；内部折射率起伏造成多次散射（第 6–7 章）</td><td>植被近红外高反射与 NDVI；SAR 的面散射、体散射与二面角散射</td></tr>
+        <tr><td>吸收</td><td>光子能量匹配量子跃迁：电子、振动、转动（第 2、7、8 章）</td><td>叶绿素、黏土 2.2 µm、水汽与 CO₂ 吸收带、大气窗口</td></tr>
+        <tr><td>热发射</td><td>热运动 + 普朗克量子化；基尔霍夫定律 e = 1 − R（第 8 章）</td><td>地表与海表温度、岩性识别、火点探测</td></tr>
+        <tr><td>取向极化</td><td>极性水分子跟随电场转动（德拜弛豫）（第 9 章）</td><td>土壤水分、海表盐度、雷达对水分的高敏感</td></tr>
+        <tr><td>磁偶极跃迁</td><td>顺磁性 O₂ 被光的磁场驱动（第 8 章）</td><td>50–60 GHz 大气温度廓线；O₂ A 带测气压与云顶高度</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="prose">
+    <p class="key">下次看到一幅遥感影像时，不妨想一想：每个像素背后，都有无数电子在光的电场中振动，无数条路径的箭头首尾相接。我们称之为“反射”和“折射”的，是它们相加之后留下的结果。</p>
+  </div>
+</section>
+
+<footer class="refs">
+  <h2>延伸阅读</h2>
+  <ol>
+    <li>R. P. Feynman, R. B. Leighton, M. Sands. <em>The Feynman Lectures on Physics</em>, Vol. I, Ch. 30–33（折射率的起源、偏振、反射）。</li>
+    <li>R. P. Feynman. <em>QED: The Strange Theory of Light and Matter</em>. Princeton, 1985（第 1–3 讲：小箭头）。</li>
+    <li>E. Hecht. <em>Optics</em>, 5th ed. Ch. 3–4（散射、菲涅尔方程、布儒斯特角的偶极子解释）。</li>
+    <li>J. D. Jackson. <em>Classical Electrodynamics</em>, 3rd ed. Ch. 7（色散与介质中的波）。</li>
+    <li>F. T. Ulaby, D. G. Long. <em>Microwave Radar and Radiometric Remote Sensing</em>. Univ. of Michigan Press, 2014.</li>
+    <li>S. Jacquemoud, S. Ustin. <em>Leaf Optical Properties</em>. Cambridge, 2019.</li>
+    <li>J. R. Schott. <em>Remote Sensing: The Image Chain Approach</em>, 2nd ed. Oxford, 2007.</li>
+  </ol>
+  <p>图中的波动、菲涅尔系数、洛伦兹与德拜模型、普朗克曲线均按标准公式实时计算；地物光谱、叶片光学参数、大气透过率与信号组成取典型量级，用于示意，具体数值会随地物和大气条件变化。</p>
+</footer>
+
+</main>
+
+<script src="js/core.js"></script>
+<script src="js/hero.js"></script>
+<script src="js/ch1_em.js"></script>
+<script src="js/ch2_osc.js"></script>
+<script src="js/ch3_refraction.js"></script>
+<script src="js/ch4_reflection.js"></script>
+<script src="js/ch5_qed.js"></script>
+<script src="js/ch6_rough.js"></script>
+<script src="js/ch7_leaf.js"></script>
+<script src="js/ch7_spectra.js"></script>
+<script src="js/ch8_emission.js"></script>
+<script src="js/ch9_microwave.js"></script>
+<script src="js/ch10_chain.js"></script>
